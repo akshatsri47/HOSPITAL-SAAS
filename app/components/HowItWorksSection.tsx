@@ -1,20 +1,36 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+
 const STEPS = [
-  { n: "01", icon: "call",              title: "Patient dials in",        desc: "Any time, day or night. No IVR menus, no hold music." },
+  { n: "01", icon: "call",              title: "Patient dials in",           desc: "Any time, day or night. No IVR menus, no hold music." },
   { n: "02", icon: "record_voice_over", title: "AI greets in their language", desc: "Language detected, patient welcomed within 800ms." },
-  { n: "03", icon: "psychology",        title: "Intent understood",       desc: "Appointment, lab report, billing — 97% accuracy."    },
-  { n: "04", icon: "verified_user",     title: "Resolved or routed",      desc: "Answered by AI or transferred to the right desk."    },
+  { n: "03", icon: "psychology",        title: "Intent understood",          desc: "Appointment, lab report, billing — 97% accuracy."    },
+  { n: "04", icon: "verified_user",     title: "Resolved or routed",         desc: "Answered by AI or transferred to the right desk."    },
 ];
 
 export default function HowItWorksSection() {
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const el = ref.current;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { el.classList.add("in-view"); obs.disconnect(); } },
+      { threshold: 0.1 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <section className="section-px section-py bg-white" id="how-it-works">
+    <section ref={ref} className="section-px section-py fade-up-section" id="how-it-works"
+      style={{ background: "linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)" }}>
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
           <p className="text-secondary font-semibold text-[13px] uppercase tracking-[0.18em] mb-3">How It Works</p>
-          <h2 className="font-headline font-extrabold text-primary leading-tight
-                         text-[2rem] sm:text-[2.6rem] lg:text-[3rem]">
+          <h2 className="font-headline font-extrabold text-primary leading-tight text-[2rem] sm:text-[2.6rem] lg:text-[3rem]">
             Set up in 48 hours. Works forever.
           </h2>
         </div>
@@ -24,20 +40,22 @@ export default function HowItWorksSection() {
 
           {/* Arrow connectors desktop */}
           {[1,2,3].map(i => (
-            <div key={i} className={`hidden lg:block absolute top-[2.75rem] h-px w-[calc(25%-3rem)] bg-gradient-to-r from-secondary/30 to-secondary/30`}
+            <div key={i} className="hidden lg:block absolute top-[2.75rem] h-px w-[calc(25%-3rem)] bg-gradient-to-r from-secondary/30 to-secondary/30"
               style={{ left: `calc(${i * 25}% + 1.5rem)` }}
             />
           ))}
 
-          {STEPS.map(({ n, icon, title, desc }) => (
-            <div key={n} className="flex flex-col gap-4 sm:gap-5 group">
+          {STEPS.map(({ n, icon, title, desc }, i) => (
+            <div key={n} className="flex flex-col gap-4 sm:gap-5 group"
+              style={{ transitionDelay: `${i * 100}ms` }}>
               {/* Number + icon box */}
               <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-secondary/8 border border-secondary/15
                               flex items-center justify-center
-                              group-hover:bg-secondary group-hover:border-secondary group-hover:shadow-lg
+                              group-hover:bg-secondary group-hover:border-secondary group-hover:shadow-[0_8px_24px_rgba(13,148,136,0.3)]
                               transition-all duration-300">
                 <span className="material-symbols-outlined text-secondary text-[24px] sm:text-[26px]
-                                 group-hover:text-white transition-colors duration-300">
+                                 group-hover:text-white transition-colors duration-300"
+                  style={{ fontVariationSettings: '"FILL" 1' }}>
                   {icon}
                 </span>
                 {/* Step label */}

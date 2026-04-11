@@ -4,63 +4,344 @@
    + Text block (eyebrow · headline · body · CTA)
 ───────────────────────────────────────────────────────────── */
 
-/* Visual Panel 1 — Live multilingual conversation */
+"use client";
+
+import { useState, useEffect } from "react";
+
+/* ────────────────────────────────────────────────────────────
+   LANGUAGE DATA  — 5 tabs, each with a patient message,
+   AI reply, and English translation strip
+──────────────────────────────────────────────────────────── */
+const LANGUAGES = [
+  {
+    code: "TA",
+    label: "Tamil",
+    flag: "🇮🇳",
+    detectedIn: "2.8s",
+    patient: {
+      location: "Patient · Chennai",
+      text: "நான் என் இரத்தப் பரிசோதனை முடிவுகளை அறிய விரும்புகிறேன்",
+      translation: "I would like to know my blood test results",
+    },
+    ai: {
+      label: "Aura AI · Tamil",
+      text: "உங்கள் அறிக்கை SMS மூலம் அனுப்பப்பட்டது ✓",
+      translation: "Your report has been sent via SMS ✓",
+    },
+    avatar: { initials: "A", bg: "bg-rose-400" },
+  },
+  {
+    code: "EN",
+    label: "English",
+    flag: "🇬🇧",
+    detectedIn: "1.2s",
+    patient: {
+      location: "Patient · Mumbai",
+      text: "I need to reschedule my appointment with Dr. Mehta",
+      translation: "I need to reschedule my appointment with Dr. Mehta",
+    },
+    ai: {
+      label: "Aura AI · English",
+      text: "Done! Your appointment is now Thursday at 3 PM with Dr. Mehta ✓",
+      translation: "Done! Your appointment is now Thursday at 3 PM with Dr. Mehta ✓",
+    },
+    avatar: { initials: "S", bg: "bg-blue-400" },
+  },
+  {
+    code: "HI",
+    label: "Hindi",
+    flag: "🇮🇳",
+    detectedIn: "2.1s",
+    patient: {
+      location: "Patient · Delhi",
+      text: "मुझे कार्डियोलॉजी में अपॉइंटमेंट चाहिए",
+      translation: "I need an appointment in Cardiology",
+    },
+    ai: {
+      label: "Aura AI · Hindi",
+      text: "डॉ. मेहता के साथ सोमवार को दोपहर 11 बजे आपका अपॉइंटमेंट बुक हो गया है ✓",
+      translation: "Your appointment is booked with Dr. Mehta, Monday at 11 AM ✓",
+    },
+    avatar: { initials: "P", bg: "bg-amber-400" },
+  },
+  {
+    code: "BN",
+    label: "Bengali",
+    flag: "🇮🇳",
+    detectedIn: "2.4s",
+    patient: {
+      location: "Patient · Kolkata",
+      text: "আমার শিশুর টিকা কোথায় দিতে হবে?",
+      translation: "Where do I get my child vaccinated?",
+    },
+    ai: {
+      label: "Aura AI · Bengali",
+      text: "শিশু বিভাগে যান — ড. ভট্টাচার্য শুক্রবার সকাল ১০টায় পাওয়া যাবেন ✓",
+      translation: "Visit Pediatrics — Dr. Bhattacharya is available Friday at 10 AM ✓",
+    },
+    avatar: { initials: "R", bg: "bg-purple-400" },
+  },
+  {
+    code: "MR",
+    label: "Marathi",
+    flag: "🇮🇳",
+    detectedIn: "2.6s",
+    patient: {
+      location: "Patient · Pune",
+      text: "माझ्या ऑर्थोपेडिक्स अपॉइंटमेंटची वेळ बदलायची आहे",
+      translation: "I want to change the time of my Orthopedics appointment",
+    },
+    ai: {
+      label: "Aura AI · Marathi",
+      text: "डॉ. राव यांच्यासोबत गुरुवारी दुपारी २ वाजता अपॉइंटमेंट निश्चित झाली ✓",
+      translation: "Appointment confirmed with Dr. Rao, Thursday at 2 PM ✓",
+    },
+    avatar: { initials: "K", bg: "bg-teal-400" },
+  },
+] as const;
+
+type LangIndex = 0 | 1 | 2 | 3 | 4;
+
+/* ────────────────────────────────────────────────────────────
+   PANEL — upgraded multilingual conversation UI
+──────────────────────────────────────────────────────────── */
 function PanelConversation() {
+  const [active, setActive] = useState<LangIndex>(0);
+  const [visible, setVisible] = useState(true);
+  const [showBadge, setShowBadge] = useState(false);
+  const [badgeDismissed, setBadgeDismissed] = useState(false);
+  const lang = LANGUAGES[active];
+
+  /* Auto-detection badge: shows after 1 s, hides after 3 s */
+  useEffect(() => {
+    setBadgeDismissed(false);
+    setShowBadge(false);
+    const show = setTimeout(() => setShowBadge(true), 900);
+    const hide = setTimeout(() => setShowBadge(false), 3800);
+    return () => { clearTimeout(show); clearTimeout(hide); };
+  }, [active]);
+
+  /* Cross-fade when switching tabs */
+  const switchTab = (i: LangIndex) => {
+    if (i === active) return;
+    setVisible(false);
+    setTimeout(() => { setActive(i); setVisible(true); }, 220);
+  };
+
   return (
     <div
-      className="relative w-full h-full min-h-[420px] sm:min-h-[480px] rounded-3xl overflow-hidden"
+      className="relative w-full h-full min-h-[520px] sm:min-h-[560px] rounded-3xl overflow-hidden flex flex-col"
       style={{ background: "linear-gradient(145deg, #0a2235 0%, #083a36 60%, #065544 100%)" }}
     >
       {/* Soft glow */}
       <div className="absolute inset-0 bg-gradient-to-tr from-secondary/15 via-transparent to-transparent pointer-events-none" />
 
-      {/* Chat bubbles */}
-      <div className="absolute inset-0 flex flex-col justify-center gap-4 px-6 sm:px-8 py-8">
+      {/* ── Language tab switcher ── */}
+      <div className="relative z-10 flex items-center gap-1 px-4 pt-4 pb-0 overflow-x-auto no-scrollbar">
+        {LANGUAGES.map((l, i) => {
+          const isActive = i === active;
+          return (
+            <button
+              key={l.code}
+              id={`lang-tab-${l.code}`}
+              onClick={() => switchTab(i as LangIndex)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all duration-200 flex-shrink-0"
+              style={
+                isActive
+                  ? {
+                      background: "linear-gradient(135deg, #0D9488, #5EEAD4)",
+                      color: "#fff",
+                      boxShadow: "0 2px 12px rgba(13,148,136,0.45)",
+                    }
+                  : {
+                      background: "rgba(255,255,255,0.06)",
+                      color: "rgba(255,255,255,0.55)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }
+              }
+            >
+              <span>{l.flag}</span>
+              <span>{l.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
-        {/* Incoming patient */}
-        <div className="flex items-end gap-2 self-start max-w-[78%]">
-          <div className="w-8 h-8 rounded-full bg-slate-600 text-white text-[13px] font-bold flex items-center justify-center flex-shrink-0">P</div>
-          <div className="bg-white/90 backdrop-blur rounded-2xl rounded-bl-sm p-3 shadow-lg">
-            <p className="text-[11px] font-semibold text-slate-500 mb-1">Patient · Bangalore</p>
-            <p className="text-[13px] text-slate-800 leading-relaxed">ನನಗೆ ಆರ್ಥೋಪೀಡಿಕ್ಸ್‌ನಲ್ಲಿ ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಬೇಕು</p>
+      {/* ── Auto-detection badge ── */}
+      <div
+        className="relative z-20 flex justify-center mt-2"
+        style={{
+          opacity: showBadge && !badgeDismissed ? 1 : 0,
+          transform: showBadge && !badgeDismissed ? "translateY(0)" : "translateY(-6px)",
+          transition: "opacity 0.35s ease, transform 0.35s ease",
+          pointerEvents: showBadge && !badgeDismissed ? "auto" : "none",
+        }}
+      >
+        <div
+          className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-semibold cursor-pointer select-none"
+          style={{
+            background: "linear-gradient(135deg, rgba(13,148,136,0.9), rgba(94,234,212,0.85))",
+            backdropFilter: "blur(8px)",
+            boxShadow: "0 4px 16px rgba(13,148,136,0.5)",
+            color: "#fff",
+          }}
+          onClick={() => setBadgeDismissed(true)}
+          title="Click to dismiss"
+        >
+          <span
+            className="material-symbols-outlined text-[13px] animate-pulse"
+            style={{ fontVariationSettings: '"FILL" 1' }}
+          >
+            language
+          </span>
+          <span>
+            {lang.label} detected in{" "}
+            <span className="font-extrabold">{lang.detectedIn}</span>
+          </span>
+          <span className="material-symbols-outlined text-[11px] opacity-70">close</span>
+        </div>
+      </div>
+
+      {/* ── Chat bubbles with cross-fade ── */}
+      <div
+        className="relative z-10 flex flex-col justify-center gap-4 px-5 sm:px-7 py-5 flex-1"
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(6px)",
+          transition: "opacity 0.22s ease, transform 0.22s ease",
+        }}
+      >
+        {/* Patient bubble */}
+        <div className="flex items-end gap-2 self-start max-w-[82%]">
+          <div
+            className={`w-8 h-8 rounded-full ${lang.avatar.bg} text-white text-[13px] font-bold flex items-center justify-center flex-shrink-0`}
+          >
+            {lang.avatar.initials}
+          </div>
+          <div className="bg-white/92 backdrop-blur rounded-2xl rounded-bl-sm p-3 shadow-lg">
+            <p className="text-[10.5px] font-semibold text-slate-500 mb-1">
+              {lang.patient.location}
+            </p>
+            <p className="text-[13px] text-slate-800 leading-relaxed font-medium">
+              {lang.patient.text}
+            </p>
           </div>
         </div>
 
-        {/* AI response */}
-        <div className="flex items-end gap-2 self-end flex-row-reverse max-w-[78%]">
+        {/* ── Side-by-side translation strip (patient) ── */}
+        <div
+          className="self-start ml-10 flex items-start gap-2 px-3 py-2 rounded-xl max-w-[80%]"
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(94,234,212,0.18)",
+          }}
+        >
+          <span
+            className="material-symbols-outlined text-[13px] text-teal-300 flex-shrink-0 mt-0.5"
+            style={{ fontVariationSettings: '"FILL" 1' }}
+          >
+            translate
+          </span>
+          <div className="flex gap-2 flex-wrap">
+            <span className="text-[10.5px] text-slate-300 italic leading-relaxed">
+              {lang.patient.translation}
+            </span>
+            <span
+              className="text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide self-start flex-shrink-0"
+              style={{ background: "rgba(13,148,136,0.3)", color: "#5EEAD4" }}
+            >
+              EN
+            </span>
+          </div>
+        </div>
+
+        {/* AI bubble */}
+        <div className="flex items-end gap-2 self-end flex-row-reverse max-w-[82%]">
           <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-            <span className="material-symbols-outlined text-white text-[15px]">graphic_eq</span>
+            <span className="material-symbols-outlined text-white text-[15px]">
+              graphic_eq
+            </span>
           </div>
-          <div className="rounded-2xl rounded-br-sm p-3 shadow-lg" style={{ background: "linear-gradient(135deg, #0D9488, #5EEAD4)" }}>
-            <p className="text-[11px] font-semibold text-teal-900 mb-1">Aura AI · Kannada</p>
-            <p className="text-[13px] text-white leading-relaxed">Dr. Rao ಅವರೊಂದಿಗೆ ಗುರುವಾರ ಮಧ್ಯಾಹ್ನ 2:00 ಕ್ಕೆ ನಿಮ್ಮ ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ನಿಗದಿಯಾಗಿದೆ</p>
+          <div
+            className="rounded-2xl rounded-br-sm p-3 shadow-lg"
+            style={{ background: "linear-gradient(135deg, #0D9488, #5EEAD4)" }}
+          >
+            <p className="text-[10.5px] font-semibold text-teal-900 mb-1">
+              {lang.ai.label}
+            </p>
+            <p className="text-[13px] text-white leading-relaxed">
+              {lang.ai.text}
+            </p>
           </div>
         </div>
 
-        {/* Second patient */}
-        <div className="flex items-end gap-2 self-start max-w-[78%]">
-          <div className="w-8 h-8 rounded-full bg-rose-400 text-white text-[13px] font-bold flex items-center justify-center flex-shrink-0">A</div>
-          <div className="bg-white/90 backdrop-blur rounded-2xl rounded-bl-sm p-3 shadow-lg">
-            <p className="text-[11px] font-semibold text-slate-500 mb-1">Patient · Chennai</p>
-            <p className="text-[13px] text-slate-800">நான் என் இரத்தப் பரிசோதனை முடிவுகளை அறிய விரும்புகிறேன்</p>
-          </div>
-        </div>
-
-        {/* AI second response */}
-        <div className="flex items-end gap-2 self-end flex-row-reverse max-w-[78%]">
-          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-            <span className="material-symbols-outlined text-white text-[15px]">graphic_eq</span>
-          </div>
-          <div className="rounded-2xl rounded-br-sm p-3 shadow-lg" style={{ background: "linear-gradient(135deg, #0D9488, #5EEAD4)" }}>
-            <p className="text-[11px] font-semibold text-teal-900 mb-1">Aura AI · Tamil</p>
-            <p className="text-[13px] text-white leading-relaxed">உங்கள் அறிக்கை SMS மூலம் அனுப்பப்பட்டது ✓</p>
+        {/* ── Side-by-side translation strip (AI) ── */}
+        <div
+          className="self-end mr-10 flex items-start gap-2 px-3 py-2 rounded-xl max-w-[80%]"
+          style={{
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(94,234,212,0.18)",
+          }}
+        >
+          <span
+            className="material-symbols-outlined text-[13px] text-teal-300 flex-shrink-0 mt-0.5"
+            style={{ fontVariationSettings: '"FILL" 1' }}
+          >
+            translate
+          </span>
+          <div className="flex gap-2 flex-wrap">
+            <span className="text-[10.5px] text-slate-300 italic leading-relaxed">
+              {lang.ai.translation}
+            </span>
+            <span
+              className="text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide self-start flex-shrink-0"
+              style={{ background: "rgba(13,148,136,0.3)", color: "#5EEAD4" }}
+            >
+              EN
+            </span>
           </div>
         </div>
       </div>
 
+      {/* ── Bottom bar — active language info ── */}
+      <div
+        className="relative z-10 flex items-center justify-between px-5 py-3 mx-4 mb-4 rounded-2xl"
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className="material-symbols-outlined text-[14px] text-teal-300"
+            style={{ fontVariationSettings: '"FILL" 1' }}
+          >
+            record_voice_over
+          </span>
+          <span className="text-[11px] font-semibold text-white/70">
+            Speaking in{" "}
+            <span className="text-teal-300 font-extrabold">{lang.label}</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="relative flex h-2 w-2"
+          >
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-teal-400" />
+          </span>
+          <span className="text-[10px] font-bold text-teal-300">Live</span>
+        </div>
+      </div>
+
       {/* AI badge */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-1.5 bg-black/30 border border-white/15 rounded-full px-3 py-1.5">
-        <span className="material-symbols-outlined text-[#5EEAD4] text-[12px]" style={{ fontVariationSettings: '"FILL" 1' }}>auto_awesome</span>
+      <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-black/30 border border-white/15 rounded-full px-3 py-1.5 z-30">
+        <span
+          className="material-symbols-outlined text-[#5EEAD4] text-[12px]"
+          style={{ fontVariationSettings: '"FILL" 1' }}
+        >
+          auto_awesome
+        </span>
         <span className="text-[10.5px] font-semibold text-white">AI Generated</span>
       </div>
     </div>
@@ -96,12 +377,11 @@ function PanelDashboard() {
       <div className="px-6 pt-6 pb-2">
         <div className="flex items-end gap-[3px] h-[120px] sm:h-[140px]">
           {HOURS.map((h, i) => {
-            const isCurrent = i === 10; // highlight current hour
+            const isCurrent = i === 10;
             return (
               <div key={i} className="flex-1 flex items-end group cursor-default">
                 <div
-                  className={`w-full rounded-[2px] transition-all duration-300 group-hover:opacity-100 ${isCurrent ? "opacity-100" : "opacity-70"
-                    }`}
+                  className={`w-full rounded-[2px] transition-all duration-300 group-hover:opacity-100 ${isCurrent ? "opacity-100" : "opacity-70"}`}
                   style={{
                     height: `${(h / max) * 100}%`,
                     background: isCurrent
@@ -165,7 +445,7 @@ function PanelIntegrations() {
       <div className="p-5 grid grid-cols-2 gap-3">
         {INTEGRATIONS.map(({ name, icon, color, active }) => (
           <div key={name} className={`flex items-center gap-2.5 p-3 rounded-xl border ${color} bg-opacity-80`}>
-            <span className={`material-symbols-outlined text-[18px]`}>{icon}</span>
+            <span className="material-symbols-outlined text-[18px]">{icon}</span>
             <div className="flex-1 min-w-0">
               <p className="text-[12px] font-semibold truncate">{name}</p>
             </div>

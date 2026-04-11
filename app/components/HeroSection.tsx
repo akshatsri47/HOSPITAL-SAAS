@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 /* ─────────────────────────────────────────────────────────────
    EQ WAVEFORM  (thin 2px bars, 5 keyframe profiles, SSR-safe)
@@ -346,7 +346,6 @@ function getPosStyle(offset: number): PosStyle {
 ───────────────────────────────────────────────────────────── */
 export default function HeroSection() {
   const [centerIdx, setCenterIdx] = useState(0);
-  const [email,     setEmail]     = useState("");
 
   // Auto-cycle cards
   useEffect(() => {
@@ -359,53 +358,62 @@ export default function HeroSection() {
   }
 
   return (
-    <section className="overflow-x-hidden bg-white">
+    <section className="overflow-x-hidden relative" style={{ background: "linear-gradient(160deg, #06111f 0%, #0a1f35 40%, #083a36 75%, #0a2438 100%)" }}>
+
+      {/* Animated mesh blobs */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-teal-500/10 blur-[120px] pointer-events-none animate-pulse-slow" />
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[400px] rounded-full bg-indigo-600/10 blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 left-0 w-[300px] h-[300px] rounded-full bg-teal-400/8 blur-[80px] pointer-events-none" />
 
       {/* ── Centered copy ── */}
-      <div className="section-px max-w-4xl mx-auto text-center pt-14 sm:pt-20 lg:pt-24 pb-10 sm:pb-14">
+      <div className="relative section-px max-w-4xl mx-auto text-center pt-14 sm:pt-20 lg:pt-24 pb-10 sm:pb-14">
 
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary/8 border border-secondary/20 text-secondary mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6"
+          style={{ background: "rgba(13,148,136,0.15)", border: "1px solid rgba(94,234,212,0.3)", color: "#5EEAD4" }}>
           <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-secondary" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-teal-400" />
           </span>
           <span className="text-[12px] font-semibold">Powering 50+ hospitals across India</span>
         </div>
 
-        {/* Headline */}
-        <h1 className="font-headline font-extrabold text-primary leading-[1.06] tracking-tight mb-5
-                       text-[2.6rem] sm:text-[3.5rem] lg:text-[4.25rem] xl:text-[5rem]">
+        {/* Headline — larger, bolder, teal highlight */}
+        <h1 className="font-headline font-extrabold leading-[1.04] tracking-tight mb-5
+                       text-[2.9rem] sm:text-[3.9rem] lg:text-[4.8rem] xl:text-[5.6rem] text-white">
           Answer every patient call.
           <br />
-          <span className="text-brand-gradient">In any language. Instantly.</span>
+          <span style={{
+            background: "linear-gradient(90deg, #5EEAD4 0%, #2DD4BF 40%, #0D9488 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }}>In any language. Instantly.</span>
         </h1>
 
         {/* Sub-copy */}
-        <p className="text-on-surface-variant leading-[1.75] mb-8 mx-auto max-w-[52ch]
-                      text-[15px] sm:text-[17px] lg:text-[18px]">
+        <p className="leading-[1.8] mb-8 mx-auto max-w-[52ch]
+                      text-[15px] sm:text-[17px] lg:text-[18px] text-slate-300">
           Aura&apos;s multilingual AI agent handles every inbound hospital call —
           booking appointments, lab reports, billing queries — 24 × 7 in Hindi, Tamil,
           Telugu, Kannada and 9 more languages.
         </p>
 
-        {/* Email CTA — Zendesk style inline form */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-lg mx-auto">
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="Enter work email"
-            className="flex-1 border border-slate-200 rounded-full px-5 py-3.5 text-[14px] text-primary placeholder:text-slate-400
-                       focus:outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-all"
-          />
-          <button
+        {/* CTA buttons — matching dark hero */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
+          <a href="#pricing"
             id="hero-try-free"
-            className="bg-secondary text-white font-bold text-[14px] px-7 py-3.5 rounded-full hover:bg-secondary/90 active:scale-[0.98] transition-all
-                       shadow-[0_4px_16px_rgba(13,148,136,0.35)] whitespace-nowrap"
+            className="w-full sm:w-auto bg-secondary text-white font-bold text-[15px] px-8 py-4 rounded-full hover:bg-secondary/90 active:scale-[0.98] transition-all text-center
+                       shadow-[0_6px_24px_rgba(13,148,136,0.5)] whitespace-nowrap"
           >
-            Try it for free
-          </button>
+            Try it for free →
+          </a>
+          <a href="#how-it-works"
+            className="w-full sm:w-auto font-bold text-[15px] px-8 py-4 rounded-full transition-all text-center whitespace-nowrap"
+            style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff" }}
+          >
+            Watch demo
+          </a>
         </div>
 
         {/* Social proof */}
@@ -414,18 +422,20 @@ export default function HeroSection() {
         </p>
       </div>
 
-      {/* ── Card Stack ── */}
+      {/* ── Card stack — dark bg matched edge masks ── */}
       <div className="relative w-full overflow-x-hidden pb-16 sm:pb-20">
-        {/* Shadow mask at edges — fades side cards */}
-        <div className="absolute inset-y-0 left-0 w-24 sm:w-40 bg-gradient-to-r from-white to-transparent z-40 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-24 sm:w-40 bg-gradient-to-l from-white to-transparent z-40 pointer-events-none" />
+        {/* Shadow mask at edges */}
+        <div className="absolute inset-y-0 left-0 w-24 sm:w-40 z-40 pointer-events-none"
+          style={{ background: "linear-gradient(to right, #06111f, transparent)" }} />
+        <div className="absolute inset-y-0 right-0 w-24 sm:w-40 z-40 pointer-events-none"
+          style={{ background: "linear-gradient(to left, #0a1f35, transparent)" }} />
 
         {/* Stack container */}
         <div className="relative mx-auto" style={{ height: "480px", maxWidth: "100%" }}>
           {CARDS.map((card, i) => {
-            const offset  = getOffset(i);
+            const offset   = getOffset(i);
             const posStyle = getPosStyle(offset);
-            const Comp    = card.component;
+            const Comp     = card.component;
 
             return (
               <div
@@ -470,8 +480,8 @@ export default function HeroSection() {
               onClick={() => setCenterIdx(i)}
               className={`rounded-full transition-all duration-300 ${
                 i === centerIdx
-                  ? "w-6 h-2 bg-secondary"
-                  : "w-2 h-2 bg-slate-200 hover:bg-slate-300"
+                  ? "w-6 h-2 bg-teal-400"
+                  : "w-2 h-2 bg-white/20 hover:bg-white/40"
               }`}
               aria-label={`Go to card ${i + 1}`}
             />

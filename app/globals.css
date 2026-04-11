@@ -153,14 +153,52 @@ body {
   to   { transform: translateX(-50%); }
 }
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes pulseSlow {
+  0%, 100% { opacity: 0.07; transform: scale(1); }
+  50%       { opacity: 0.14; transform: scale(1.08); }
+}
+@keyframes borderSpin {
+  to { --angle: 360deg; }
+}
 
-.animate-float-card { animation: floatCard 6s ease-in-out infinite; }
-.animate-ping-slow  { animation: ping-slow 2.2s ease-out infinite; }
-.animate-marquee    { animation: marquee 28s linear infinite; }
+.animate-float-card  { animation: floatCard 6s ease-in-out infinite; }
+.animate-ping-slow   { animation: ping-slow 2.2s ease-out infinite; }
+.animate-marquee     { animation: marquee 28s linear infinite; }
+.animate-pulse-slow  { animation: pulseSlow 6s ease-in-out infinite; }
 
 /* ── Marquee wrapper ──────────────────────────────────── */
 .marquee-track { display: flex; width: max-content; }
 .marquee-wrap  { overflow: hidden; }
+
+/* ── No-scrollbar (language tab strip) ───────────────── */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ── Scroll-triggered fade-up sections ───────────────── */
+/*   Add class "fade-up-section" to any section element.  */
+/*   JS adds "in-view" via IntersectionObserver.          */
+.fade-up-section {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.fade-up-section.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Footer social icon hover color fill ─────────────── */
+.footer-social:hover {
+  color: var(--hover-color, #0D9488);
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── Global typography upgrades ──────────────────────── */
+body {
+  font-size: 17px;        /* up from 16px — more confident */
+  line-height: 1.75;      /* airy, premium feel */
+}

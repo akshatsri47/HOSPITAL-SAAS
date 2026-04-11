@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 
 const NAV_LINKS = [
-  { label: "Platform",    href: "#features",     hasArrow: true  },
-  { label: "Solutions",   href: "#solutions",    hasArrow: true  },
-  { label: "How It Works",href: "#how-it-works", hasArrow: false },
-  { label: "Pricing",     href: "#pricing",      hasArrow: false },
-  { label: "Customers",   href: "#testimonials", hasArrow: false },
+  { label: "Platform",     href: "#features",     hasArrow: true  },
+  { label: "Solutions",    href: "#solutions",    hasArrow: true  },
+  { label: "How It Works", href: "#how-it-works", hasArrow: false },
+  { label: "Pricing",      href: "#pricing",      hasArrow: false },
+  { label: "Customers",    href: "#testimonials", hasArrow: false },
 ];
 
 export default function Navbar() {
@@ -15,7 +15,7 @@ export default function Navbar() {
   const [open,     setOpen]     = useState(false);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 10);
+    const fn = () => setScrolled(window.scrollY > 12);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
@@ -44,25 +44,38 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── Main nav bar ── */}
-      <div className={`transition-all duration-200 ${scrolled || open ? "bg-white shadow-[0_2px_12px_rgba(15,23,42,0.08)] border-b border-slate-100" : "bg-white"}`}>
-        <div className="section-px max-w-7xl mx-auto flex h-[60px] items-center justify-between gap-6">
+      {/* ── Main nav bar — frosted glass on scroll ── */}
+      <div
+        className="transition-all duration-300"
+        style={scrolled || open ? {
+          background: "rgba(255,255,255,0.82)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(226,232,240,0.8)",
+          boxShadow: "0 2px 16px rgba(15,23,42,0.08)",
+        } : {
+          background: "rgba(255,255,255,1)",
+        }}
+      >
+        <div className="section-px max-w-7xl mx-auto flex h-[62px] items-center justify-between gap-6">
 
-          {/* Logo */}
-          <a href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-              <span className="material-symbols-outlined text-white text-[17px]">graphic_eq</span>
+          {/* Logo — larger */}
+          <a href="/" className="flex items-center gap-2.5 flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center shadow-[0_2px_8px_rgba(13,148,136,0.35)]">
+              <span className="material-symbols-outlined text-white text-[20px]" style={{ fontVariationSettings: '"FILL" 1' }}>graphic_eq</span>
             </div>
-            <span className="text-[16px] font-extrabold text-primary font-headline">aura clinical</span>
+            <span className="text-[17px] font-extrabold text-primary font-headline tracking-tight">aura clinical</span>
           </a>
 
-          {/* Desktop nav */}
+          {/* Desktop nav — animated underline hover */}
           <nav className="hidden lg:flex items-center gap-0.5 flex-1 justify-center">
             {NAV_LINKS.map(({ label, href, hasArrow }) => (
               <a key={label} href={href}
-                className="flex items-center gap-0.5 px-3.5 py-2 text-[13.5px] font-medium text-slate-600 hover:text-primary rounded-lg hover:bg-slate-50 transition-all">
+                className="nav-link group relative flex items-center gap-0.5 px-3.5 py-2 text-[13.5px] font-medium text-slate-600 hover:text-primary transition-colors duration-200">
                 {label}
-                {hasArrow && <span className="material-symbols-outlined text-[14px] text-slate-400">keyboard_arrow_down</span>}
+                {hasArrow && <span className="material-symbols-outlined text-[14px] text-slate-400 group-hover:text-slate-600 transition-colors">keyboard_arrow_down</span>}
+                {/* Animated underline */}
+                <span className="absolute bottom-0.5 left-3.5 right-3.5 h-[2px] rounded-full bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-250 origin-left" />
               </a>
             ))}
           </nav>
@@ -70,18 +83,18 @@ export default function Navbar() {
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
             <a href="#pricing" id="nav-try-free"
-              className="bg-secondary text-white text-[13px] font-bold px-5 py-2.5 rounded-full hover:bg-secondary/90 transition-all shadow-sm">
+              className="bg-secondary text-white text-[13px] font-bold px-5 py-2.5 rounded-full hover:bg-secondary/90 active:scale-[0.97] transition-all shadow-[0_2px_12px_rgba(13,148,136,0.35)]">
               Try it for free
             </a>
             <a href="#how-it-works" id="nav-view-demo"
-              className="border border-slate-200 bg-white text-primary text-[13px] font-semibold px-5 py-2.5 rounded-full hover:border-slate-300 hover:bg-slate-50 transition-all">
+              className="border border-slate-200 bg-white text-primary text-[13px] font-semibold px-5 py-2.5 rounded-full hover:border-secondary/50 hover:text-secondary transition-all">
               View demo
             </a>
           </div>
 
           {/* Mobile */}
           <div className="flex lg:hidden items-center gap-2">
-            <a href="#pricing" className="hidden sm:block bg-secondary text-white text-[12.5px] font-bold px-4 py-2 rounded-full hover:bg-secondary/90 transition-all">
+            <a href="#pricing" className="hidden sm:block bg-secondary text-white text-[12.5px] font-bold px-4 py-2 rounded-full hover:bg-secondary/90 transition-all shadow-[0_2px_8px_rgba(13,148,136,0.3)]">
               Try it for free
             </a>
             <button onClick={() => setOpen(v => !v)} aria-label="Toggle menu"
@@ -93,7 +106,8 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      <div className={`lg:hidden bg-white border-t border-slate-100 overflow-hidden transition-all duration-250 ${open ? "max-h-[420px]" : "max-h-0"}`}>
+      <div className={`lg:hidden overflow-hidden transition-all duration-300 ${open ? "max-h-[420px]" : "max-h-0"}`}
+        style={{ background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: open ? "1px solid #E2E8F0" : "none" }}>
         <nav className="section-px py-3 flex flex-col gap-0.5">
           {NAV_LINKS.map(({ label, href }) => (
             <a key={label} href={href} onClick={() => setOpen(false)}
@@ -102,7 +116,7 @@ export default function Navbar() {
             </a>
           ))}
           <div className="mt-2 pt-3 border-t border-slate-100 flex flex-col gap-2 pb-2">
-            <a href="#pricing" className="w-full bg-secondary text-white text-[14px] font-bold py-3.5 rounded-full text-center hover:bg-secondary/90 transition-all">
+            <a href="#pricing" className="w-full bg-secondary text-white text-[14px] font-bold py-3.5 rounded-full text-center hover:bg-secondary/90 transition-all shadow-[0_2px_12px_rgba(13,148,136,0.35)]">
               Try it for free
             </a>
             <a href="#how-it-works" className="w-full border border-slate-200 text-primary text-[14px] font-semibold py-3.5 rounded-full text-center hover:bg-slate-50 transition-all">
