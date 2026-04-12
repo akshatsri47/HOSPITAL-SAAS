@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-white overflow-x-hidden">
       <Navbar />
-      <div className="flex flex-col flex-1 pt-[60px] lg:pt-[92px]">
+      <div className="flex flex-col flex-1">
         <main className="flex-1">
           <HeroSection />
           <LogoStrip />

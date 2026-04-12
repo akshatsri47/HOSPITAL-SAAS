@@ -24,7 +24,7 @@ const LANGUAGES = [
       translation: "I would like to know my blood test results",
     },
     ai: {
-      label: "Aura AI · Tamil",
+      label: "Xyras AI · Tamil",
       text: "உங்கள் அறிக்கை SMS மூலம் அனுப்பப்பட்டது ✓",
       translation: "Your report has been sent via SMS ✓",
     },
@@ -41,7 +41,7 @@ const LANGUAGES = [
       translation: "I need to reschedule my appointment with Dr. Mehta",
     },
     ai: {
-      label: "Aura AI · English",
+      label: "Xyras AI · English",
       text: "Done! Your appointment is now Thursday at 3 PM with Dr. Mehta ✓",
       translation: "Done! Your appointment is now Thursday at 3 PM with Dr. Mehta ✓",
     },
@@ -58,7 +58,7 @@ const LANGUAGES = [
       translation: "I need an appointment in Cardiology",
     },
     ai: {
-      label: "Aura AI · Hindi",
+      label: "Xyras AI · Hindi",
       text: "डॉ. मेहता के साथ सोमवार को दोपहर 11 बजे आपका अपॉइंटमेंट बुक हो गया है ✓",
       translation: "Your appointment is booked with Dr. Mehta, Monday at 11 AM ✓",
     },
@@ -75,7 +75,7 @@ const LANGUAGES = [
       translation: "Where do I get my child vaccinated?",
     },
     ai: {
-      label: "Aura AI · Bengali",
+      label: "Xyras AI · Bengali",
       text: "শিশু বিভাগে যান — ড. ভট্টাচার্য শুক্রবার সকাল ১০টায় পাওয়া যাবেন ✓",
       translation: "Visit Pediatrics — Dr. Bhattacharya is available Friday at 10 AM ✓",
     },
@@ -92,7 +92,7 @@ const LANGUAGES = [
       translation: "I want to change the time of my Orthopedics appointment",
     },
     ai: {
-      label: "Aura AI · Marathi",
+      label: "Xyras AI · Marathi",
       text: "डॉ. राव यांच्यासोबत गुरुवारी दुपारी २ वाजता अपॉइंटमेंट निश्चित झाली ✓",
       translation: "Appointment confirmed with Dr. Rao, Thursday at 2 PM ✓",
     },
@@ -523,7 +523,7 @@ const SECTIONS = [
     text: {
       eyebrow: "MULTILINGUAL AI",
       headline: "Transform every patient conversation",
-      body: "Bring together patient calls from all channels, giving Aura the context it needs. Resolve requests automatically from day one — in any of 12 Indian languages.",
+      body: "Bring together patient calls from all channels, giving Xyras the context it needs. Resolve requests automatically from day one — in any of 12 Indian languages.",
       bullets: [
         "Natural language understanding — no IVR menus",
         "Replies in the patient's own language within 800ms",
@@ -539,7 +539,7 @@ const SECTIONS = [
     text: {
       eyebrow: "24 / 7 AVAILABILITY",
       headline: "Make missed calls a thing of the past",
-      body: "Your hospital front desk is offline from midnight to dawn. Aura isn't. Emergency routing, appointment booking, and lab result queries — handled flawlessly at 3 AM.",
+      body: "Your hospital front desk is offline from midnight to dawn. Xyras isn't. Emergency routing, appointment booking, and lab result queries — handled flawlessly at 3 AM.",
       bullets: [
         "Zero missed calls — guaranteed at every hour",
         "Emergency protocols trigger instant on-call alerts",
@@ -554,7 +554,7 @@ const SECTIONS = [
     text: {
       eyebrow: "BREAK THE INTEGRATION CEILING",
       headline: "Plug into your systems on day one",
-      body: "Aura connects with Epic, Meditech, Practo and every major HMS used in Indian hospitals. No custom engineering. No months of setup. Live in 48 hours.",
+      body: "Xyras connects with Epic, Meditech, Practo and every major HMS used in Indian hospitals. No custom engineering. No months of setup. Live in 48 hours.",
       bullets: [
         "12+ pre-built connectors — plug in, not build in",
         "WhatsApp and SMS notifications out of the box",

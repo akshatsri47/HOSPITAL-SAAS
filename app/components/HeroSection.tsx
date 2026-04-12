@@ -59,7 +59,7 @@ function CardConsole() {
           <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-[14px]">graphic_eq</span>
           </div>
-          <span className="font-bold text-[13px] text-slate-800">Aura Console</span>
+          <span className="font-bold text-[13px] text-slate-800">Xyras Console</span>
         </div>
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
           <span className="relative flex h-1.5 w-1.5">
@@ -394,7 +394,7 @@ export default function HeroSection() {
         {/* Sub-copy */}
         <p className="leading-[1.8] mb-8 mx-auto max-w-[52ch]
                       text-[15px] sm:text-[17px] lg:text-[18px] text-slate-300">
-          Aura&apos;s multilingual AI agent handles every inbound hospital call —
+          Xyras&apos;s multilingual AI agent handles every inbound hospital call —
           booking appointments, lab reports, billing queries — 24 × 7 in Hindi, Tamil,
           Telugu, Kannada and 9 more languages.
         </p>

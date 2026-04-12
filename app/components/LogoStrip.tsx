@@ -1,49 +1,43 @@
-/* Logo strip — auto-scrolling marquee, like Zendesk / Freshworks */
-const HOSPITALS = [
-  "Apollo Hospitals",
-  "Fortis Healthcare",
-  "Max Healthcare",
-  "Narayana Health",
-  "Medanta",
-  "Aster DM Healthcare",
-  "HCG Oncology",
-  "KIMS Hospitals",
-  "Manipal Hospitals",
-  "Columbia Asia",
-  "Yashoda Hospitals",
-  "Rainbow Hospitals",
-];
-
-/* Duplicate for seamless loop */
-const TRACK = [...HOSPITALS, ...HOSPITALS];
-
 export default function LogoStrip() {
   return (
-    <div className="border-y border-outline-variant bg-surface-container-low py-8 sm:py-10">
-      <div className="section-px max-w-7xl mx-auto mb-6 sm:mb-7 text-center">
-        <p className="text-[12px] sm:text-[13px] font-semibold text-on-surface-variant uppercase tracking-[0.18em]">
-          Trusted by leading hospitals across India
-        </p>
-      </div>
+    <div className="border-y border-outline-variant bg-surface-container-low py-10 sm:py-12">
+      <div className="section-px max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-10">
 
-      {/* Marquee */}
-      <div className="marquee-wrap">
-        <div className="marquee-track animate-marquee">
-          {TRACK.map((name, i) => (
+        {/* Left — label */}
+        <p className="text-[12px] sm:text-[13px] font-semibold text-on-surface-variant uppercase tracking-[0.18em] text-center sm:text-left whitespace-nowrap">
+          Powering the next generation of Indian hospitals
+        </p>
+
+        {/* Divider */}
+        <div className="hidden sm:block h-6 w-px bg-outline-variant/60 flex-shrink-0" />
+
+        {/* Right — placeholder slots */}
+        <div className="flex items-center gap-3 sm:gap-5 flex-wrap justify-center">
+          {["Your Hospital", "Your Clinic", "Your Health Group"].map((label) => (
             <div
-              key={i}
-              className="flex-shrink-0 mx-5 sm:mx-7 flex items-center gap-2 px-5 py-2.5
-                         bg-white rounded-xl border border-outline-variant/60
-                         shadow-[0_1px_4px_rgba(15,23,42,0.06)]"
+              key={label}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-secondary/40 bg-secondary/5"
             >
-              <span className="material-symbols-outlined text-secondary text-[15px]">local_hospital</span>
-              <span className="text-[13px] sm:text-[14px] font-semibold text-on-surface-variant whitespace-nowrap">
-                {name}
+              <span className="material-symbols-outlined text-secondary/60 text-[15px]">add_circle</span>
+              <span className="text-[12.5px] sm:text-[13px] font-semibold text-secondary/70 whitespace-nowrap">
+                {label}
               </span>
             </div>
           ))}
         </div>
+
+        {/* CTA chip */}
+        <a
+          href="#pricing"
+          className="flex-shrink-0 flex items-center gap-1.5 bg-secondary text-white font-bold text-[12px] sm:text-[13px] px-5 py-2.5 rounded-full
+                     hover:bg-secondary/90 transition-all shadow-[0_4px_16px_rgba(13,148,136,0.35)] whitespace-nowrap"
+        >
+          Join first
+          <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+        </a>
+
       </div>
     </div>
   );
 }
+

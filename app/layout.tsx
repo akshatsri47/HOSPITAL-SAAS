@@ -17,7 +17,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Aura Clinical | AI-Powered Voice Triage for Hospitals",
+  title: "Xyras | AI-Powered Voice Triage for Hospitals",
   description:
     "AI-powered multilingual triage system designed specifically for Indian hospitals. Answer every patient call instantly in Hindi, Tamil, Telugu, and 12+ languages.",
   keywords: [

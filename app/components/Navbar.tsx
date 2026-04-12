@@ -15,8 +15,9 @@ export default function Navbar() {
   const [open,     setOpen]     = useState(false);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 12);
+    const fn = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn, { passive: true });
+    fn();
     return () => window.removeEventListener("scroll", fn);
   }, []);
   useEffect(() => {
@@ -26,56 +27,63 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      {/* ── Utility bar ── */}
-      <div className="hidden lg:block bg-[#F8FAFC] border-b border-slate-100">
-        <div className="section-px max-w-7xl mx-auto flex justify-end items-center h-8 gap-4">
-          <a href="#" className="text-[11.5px] text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1">
-            <span className="material-symbols-outlined text-[13px]">person</span>Sign in
-          </a>
-          <span className="text-slate-200">|</span>
-          <a href="#" className="text-[11.5px] text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1">
-            <span className="material-symbols-outlined text-[13px]">call</span>Contact us
-          </a>
-          <span className="text-slate-200">|</span>
-          <a href="#" className="text-[11.5px] text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1">
-            <span className="material-symbols-outlined text-[13px]">language</span>EN / IN
-          </a>
-        </div>
-      </div>
+    <header className="fixed inset-x-0 top-0 z-50 flex flex-col items-center pointer-events-none">
 
-      {/* ── Main nav bar — frosted glass on scroll ── */}
+      {/* ── Pill navbar — always floating, wider at top, tighter on scroll ── */}
       <div
-        className="transition-all duration-300"
-        style={scrolled || open ? {
-          background: "rgba(255,255,255,0.82)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(226,232,240,0.8)",
-          boxShadow: "0 2px 16px rgba(15,23,42,0.08)",
-        } : {
-          background: "rgba(255,255,255,1)",
+        className="pointer-events-auto transition-all duration-500 mt-3"
+        style={{
+          /* At top: ~70% width  |  scrolled: ~60% width */
+          width: scrolled ? "min(62%, 900px)" : "min(75%, 1100px)",
+          background: scrolled
+            ? "rgba(255,255,255,0.80)"
+            : "rgba(255,255,255,0.92)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          border: "1px solid rgba(226,232,240,0.7)",
+          boxShadow: scrolled
+            ? "0 6px 36px rgba(15,23,42,0.13), 0 1px 4px rgba(15,23,42,0.07)"
+            : "0 2px 16px rgba(15,23,42,0.07)",
+          borderRadius: "9999px",
         }}
       >
-        <div className="section-px max-w-7xl mx-auto flex h-[62px] items-center justify-between gap-6">
-
-          {/* Logo — larger */}
-          <a href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center shadow-[0_2px_8px_rgba(13,148,136,0.35)]">
-              <span className="material-symbols-outlined text-white text-[20px]" style={{ fontVariationSettings: '"FILL" 1' }}>graphic_eq</span>
-            </div>
-            <span className="text-[17px] font-extrabold text-primary font-headline tracking-tight">aura clinical</span>
+        <div
+          className="flex items-center justify-between gap-4"
+          style={{
+            padding: scrolled ? "0 20px" : "0 24px",
+            height:  scrolled ? "50px"   : "58px",
+            transition: "all 0.4s ease",
+          }}
+        >
+          {/* Logo */}
+          <a href="/" className="flex items-center flex-shrink-0">
+            <span
+              className="font-headline font-extrabold tracking-tight"
+              style={{
+                fontSize: scrolled ? "15px" : "17px",
+                background: "linear-gradient(90deg, #0D9488 0%, #0f766e 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                transition: "font-size 0.4s",
+              }}
+            >
+              xyras
+            </span>
           </a>
 
-          {/* Desktop nav — animated underline hover */}
-          <nav className="hidden lg:flex items-center gap-0.5 flex-1 justify-center">
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-0 flex-1 justify-center">
             {NAV_LINKS.map(({ label, href, hasArrow }) => (
               <a key={label} href={href}
-                className="nav-link group relative flex items-center gap-0.5 px-3.5 py-2 text-[13.5px] font-medium text-slate-600 hover:text-primary transition-colors duration-200">
+                className="nav-link group relative flex items-center gap-0.5 px-3 py-2 text-[13px] font-medium text-slate-600 hover:text-primary transition-colors duration-200">
                 {label}
-                {hasArrow && <span className="material-symbols-outlined text-[14px] text-slate-400 group-hover:text-slate-600 transition-colors">keyboard_arrow_down</span>}
-                {/* Animated underline */}
-                <span className="absolute bottom-0.5 left-3.5 right-3.5 h-[2px] rounded-full bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-250 origin-left" />
+                {hasArrow && (
+                  <span className="material-symbols-outlined text-[13px] text-slate-400 group-hover:text-slate-600 transition-colors">
+                    keyboard_arrow_down
+                  </span>
+                )}
+                <span className="absolute bottom-0.5 left-3 right-3 h-[2px] rounded-full bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-250 origin-left" />
               </a>
             ))}
           </nav>
@@ -83,31 +91,37 @@ export default function Navbar() {
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
             <a href="#pricing" id="nav-try-free"
-              className="bg-secondary text-white text-[13px] font-bold px-5 py-2.5 rounded-full hover:bg-secondary/90 active:scale-[0.97] transition-all shadow-[0_2px_12px_rgba(13,148,136,0.35)]">
+              className="bg-secondary text-white text-[12.5px] font-bold px-4 py-2 rounded-full hover:bg-secondary/90 active:scale-[0.97] transition-all shadow-[0_2px_12px_rgba(13,148,136,0.35)] whitespace-nowrap">
               Try it for free
             </a>
             <a href="#how-it-works" id="nav-view-demo"
-              className="border border-slate-200 bg-white text-primary text-[13px] font-semibold px-5 py-2.5 rounded-full hover:border-secondary/50 hover:text-secondary transition-all">
+              className="border border-slate-200 bg-white/60 text-primary text-[12.5px] font-semibold px-4 py-2 rounded-full hover:border-secondary/50 hover:text-secondary transition-all whitespace-nowrap">
               View demo
             </a>
           </div>
 
-          {/* Mobile */}
+          {/* Mobile hamburger */}
           <div className="flex lg:hidden items-center gap-2">
-            <a href="#pricing" className="hidden sm:block bg-secondary text-white text-[12.5px] font-bold px-4 py-2 rounded-full hover:bg-secondary/90 transition-all shadow-[0_2px_8px_rgba(13,148,136,0.3)]">
+            <a href="#pricing" className="hidden sm:block bg-secondary text-white text-[12px] font-bold px-3.5 py-1.5 rounded-full hover:bg-secondary/90 transition-all shadow-[0_2px_8px_rgba(13,148,136,0.3)]">
               Try it for free
             </a>
             <button onClick={() => setOpen(v => !v)} aria-label="Toggle menu"
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors">
-              <span className="material-symbols-outlined text-[22px]">{open ? "close" : "menu"}</span>
+              className="w-9 h-9 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors">
+              <span className="material-symbols-outlined text-[20px]">{open ? "close" : "menu"}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile menu */}
-      <div className={`lg:hidden overflow-hidden transition-all duration-300 ${open ? "max-h-[420px]" : "max-h-0"}`}
-        style={{ background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: open ? "1px solid #E2E8F0" : "none" }}>
+      {/* Mobile menu — drops below pill */}
+      <div
+        className={`pointer-events-auto w-full lg:hidden overflow-hidden transition-all duration-300 ${open ? "max-h-[420px]" : "max-h-0"}`}
+        style={{
+          background: "rgba(255,255,255,0.97)",
+          backdropFilter: "blur(20px)",
+          borderBottom: open ? "1px solid #E2E8F0" : "none",
+        }}
+      >
         <nav className="section-px py-3 flex flex-col gap-0.5">
           {NAV_LINKS.map(({ label, href }) => (
             <a key={label} href={href} onClick={() => setOpen(false)}
@@ -125,6 +139,7 @@ export default function Navbar() {
           </div>
         </nav>
       </div>
+
     </header>
   );
 }

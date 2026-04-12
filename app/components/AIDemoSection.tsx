@@ -9,7 +9,7 @@ const EQ_N = 24;
 
 function EQWaveform() {
     return (
-        <div className="flex items-end w-full" style={{ height: "28px", gap: "2.5px" }}>
+        <div className="flex items-end justify-center w-full" style={{ height: "28px", gap: "2.5px" }}>
             {Array.from({ length: EQ_N }).map((_, i) => (
                 <div key={i} style={{
                     width: "2px", height: "3px", borderRadius: "1px", flexShrink: 0,
@@ -68,19 +68,14 @@ export default function AIDemoSection() {
                     <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: '"FILL" 1' }}>auto_awesome</span>
                 </div>
 
-                <h2 className="font-headline font-extrabold leading-tight mb-5
-                       text-[2.4rem] sm:text-[3.2rem] lg:text-[3.8rem]">
-                    <span className="text-brand-gradient">Aura: Multilingual AI</span>
-                    <br />
-                    <span className="text-white">that listens, acts, and resolves</span>
-                </h2>
+
 
                 {/* CTAs */}
                 <div className="flex items-center justify-center gap-4 flex-wrap">
                     <a href="#pricing"
                         className="bg-secondary text-white font-bold text-[14px] sm:text-[15px] px-7 py-3.5 rounded-full
                        hover:bg-secondary/90 transition-all shadow-[0_4px_24px_rgba(13,148,136,0.5)]">
-                        Explore Aura AI
+                        Explore Xyras AI
                     </a>
                     <a href="#how-it-works" className="flex items-center gap-1.5 text-slate-300 font-semibold text-[14px] sm:text-[15px] hover:text-white transition-colors">
                         See what&apos;s new
@@ -125,13 +120,22 @@ export default function AIDemoSection() {
                         </div>
                     </div>
 
-                    {/* ── Center — EQ animation ── */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-white/8 border border-white/15 flex items-center justify-center mb-4">
-                            <span className="material-symbols-outlined text-secondary-fixed text-[30px] sm:text-[36px]">graphic_eq</span>
-                        </div>
-                        <div className="w-48 sm:w-64">
-                            <EQWaveform />
+                    {/* ── Center — EQ animation (perfectly centered) ── */}
+                    <div
+                        className="absolute z-0"
+                        style={{
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, -60%)",
+                        }}
+                    >
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-white/8 border border-white/15 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-secondary-fixed text-[30px] sm:text-[36px]">graphic_eq</span>
+                            </div>
+                            <div className="w-48 sm:w-64">
+                                <EQWaveform />
+                            </div>
                         </div>
                     </div>
 

@@ -1,25 +1,25 @@
-/* Value props — 3-col "Why Aura" section, like Freshworks homepage */
+/* Value props — 3-col "Why Xyras" section, like Freshworks homepage */
 const VALUES = [
   {
     icon: "call_missed",
     color: "text-rose-500",
     bg:    "bg-rose-50",
     title: "40% of calls go unanswered",
-    desc:  "During peak hours, missed calls mean missed appointments and lost patient trust. Aura answers every single one.",
+    desc:  "During peak hours, missed calls mean missed appointments and lost patient trust. Xyras answers every single one.",
   },
   {
     icon: "translate",
     color: "text-secondary",
     bg:    "bg-secondary/8",
     title: "Language is a barrier, not a limit",
-    desc:  "Most hospital phone systems only support English. Aura speaks to patients in their mother tongue — instantly.",
+    desc:  "Most hospital phone systems only support English. Xyras speaks to patients in their mother tongue — instantly.",
   },
   {
     icon: "group_remove",
     color: "text-amber-500",
     bg:    "bg-amber-50",
     title: "Staff burnt out on repeat queries",
-    desc:  "Appointment timings, lab reports, billing — Aura handles all of it so your front desk can focus on patients.",
+    desc:  "Appointment timings, lab reports, billing — Xyras handles all of it so your front desk can focus on patients.",
   },
 ];
 
@@ -30,13 +30,13 @@ export default function ProblemSection() {
 
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-          <p className="text-secondary font-semibold text-[13px] uppercase tracking-[0.18em] mb-3">Why Aura</p>
+          <p className="text-secondary font-semibold text-[13px] uppercase tracking-[0.18em] mb-3">Why Xyras</p>
           <h2 className="font-headline font-extrabold text-primary leading-tight
                          text-[2rem] sm:text-[2.6rem] lg:text-[3rem] mb-4">
             The problems every hospital faces
           </h2>
           <p className="text-on-surface-variant text-[15px] sm:text-[17px] leading-relaxed">
-            Patient experience starts before they arrive. Aura ensures that first call is perfect.
+            Patient experience starts before they arrive. Xyras ensures that first call is perfect.
           </p>
         </div>
 
