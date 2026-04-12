@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function CtaSection() {
   const ref = useRef<HTMLElement>(null);
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
   useEffect(() => {
     if (!ref.current) return;
     const el = ref.current;
@@ -14,6 +19,26 @@ export default function CtaSection() {
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/demo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error("Failed to submit");
+      setSuccess(true);
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section ref={ref} className="section-px section-py fade-up-section" id="pricing"
@@ -52,22 +77,43 @@ export default function CtaSection() {
             Setup takes 48 hours. No hardware. No engineers. Cancel any time.
           </p>
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="#" id="cta-start"
-              className="w-full sm:w-auto bg-secondary text-white font-bold rounded-xl
-                         hover:bg-secondary/90 active:scale-[0.98] transition-all
-                         shadow-[0_8px_28px_rgba(13,148,136,0.5)]
-                         text-[15px] px-9 py-4">
-              Start Free Trial
-            </a>
-            <a href="#" id="cta-demo"
-              className="w-full sm:w-auto bg-white/10 border border-white/25 text-white font-semibold rounded-xl
-                         hover:bg-white/18 hover:border-white/40 transition-all
-                         text-[15px] px-9 py-4">
-              Talk to Sales
-            </a>
-          </div>
+          {/* CTAs / Email Form */}
+          {success ? (
+            <div className="bg-secondary/10 border border-secondary/30 rounded-2xl py-6 px-6 max-w-md mx-auto animate-fade-in">
+              <div className="text-secondary mb-3 flex justify-center">
+                <span className="material-symbols-outlined text-[40px]">check_circle</span>
+              </div>
+              <h3 className="text-white font-bold text-xl mb-2">Request Received!</h3>
+              <p className="text-slate-300 text-[15px] leading-relaxed">
+                We'll reach out to <strong className="text-white">{email}</strong> within 24 hours.
+              </p>
+            </div>
+          ) : (
+            <div className="max-w-lg mx-auto">
+              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 justify-center">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your work email"
+                  className="w-full sm:w-64 bg-white/10 border border-white/20 text-white rounded-xl px-5 py-4 focus:outline-none focus:border-secondary focus:bg-white/15 transition-all text-[15px] placeholder:text-slate-400"
+                />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full sm:w-auto bg-secondary text-white font-bold rounded-xl hover:bg-secondary/90 active:scale-[0.98] transition-all shadow-[0_8px_28px_rgba(13,148,136,0.5)] text-[15px] px-9 py-4 disabled:opacity-75 disabled:active:scale-100 flex items-center justify-center min-w-[160px]"
+                >
+                  {loading ? (
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    "Request Demo"
+                  )}
+                </button>
+              </form>
+              {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
+            </div>
+          )}
 
           <p className="text-slate-500 text-[12px] mt-6 font-medium">
             No credit card required · HIPAA compliant · 99.9% uptime SLA

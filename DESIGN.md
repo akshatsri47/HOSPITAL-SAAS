@@ -159,3 +159,4 @@ For AI-driven insights, use a small chip with a `secondary_container` background
 - **Don't use 100% black.** Always use `on_surface` (#181C1E) for text to maintain a professional, soft-touch feel.
 - **Don't use generic AI icons.** No brains, no circuits, no robots. Represent AI through data visualizations, gradients, and the "Vitality Pulse" component.
 - **Don't use sharp corners.** Adhere to the `DEFAULT` (0.5rem) and `md` (0.75rem) roundedness scale to maintain a "Human-Centric" feel.
+- **Don't use 100% white.** Always use `surface-container-lowest` (#FFFFFF) for cards to maintain a professional, soft-touch feel.
