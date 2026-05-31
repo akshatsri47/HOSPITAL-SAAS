@@ -40,14 +40,14 @@ function useCounter(target: number, duration: number, start: boolean) {
     return val;
 }
 
-function formatINR(n: number) {
-    if (n >= 100000) return "₹" + (n / 100000).toFixed(2) + "L";
-    return "₹" + n.toLocaleString("en-IN");
+function formatUSD(n: number) {
+    if (n >= 1000000) return "$" + (n / 1000000).toFixed(1) + "M";
+    return "$" + n.toLocaleString("en-US");
 }
 
 /* ──────────────────────────────────────────────────────────
    SECTION 1: HERO
-────────────────────────────────────────────────────────── */
+   ────────────────────────────────────────────────────────── */
 function HeroSection() {
     return (
         <section
@@ -76,7 +76,7 @@ function HeroSection() {
                         background: "linear-gradient(90deg, #5EEAD4, #0D9488, #2DD4BF)",
                         WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
                     }}>
-                        ₹3,00,000/month
+                        $50,000/month
                     </span>
                     <br />for a job that AI can do.
                 </h1>
@@ -110,7 +110,7 @@ const NAMES = [
 
 function EmployeeSection({ onVisible }: { onVisible: () => void }) {
     const { ref, visible } = useInView(0.1);
-    const totalCost = useCounter(300000, 2200, visible);
+    const totalCost = useCounter(50000, 2200, visible);
 
     useEffect(() => { if (visible) onVisible(); }, [visible, onVisible]);
 
@@ -127,7 +127,7 @@ function EmployeeSection({ onVisible }: { onVisible: () => void }) {
                         Your 20 front desk staff
                     </h2>
                     <p className="text-slate-500 text-[15px] sm:text-[16px] max-w-md mx-auto">
-                        Each paid ₹15,000/month to answer patient calls, book appointments, and route queries.
+                        Each paid $2,500/month to answer business calls, schedule bookings, and route queries.
                     </p>
                 </div>
 
@@ -147,7 +147,7 @@ function EmployeeSection({ onVisible }: { onVisible: () => void }) {
                                 <span className="material-symbols-outlined text-slate-400 text-[20px] sm:text-[22px]">person</span>
                             </div>
                             <span className="text-[9px] sm:text-[10px] text-slate-500 font-medium truncate w-full text-center">{name}</span>
-                            <span className="text-[8.5px] sm:text-[9.5px] text-rose-500 font-bold">₹15,000</span>
+                            <span className="text-[8.5px] sm:text-[9.5px] text-rose-500 font-bold">$2,500</span>
                         </div>
                     ))}
                 </div>
@@ -157,7 +157,7 @@ function EmployeeSection({ onVisible }: { onVisible: () => void }) {
                     <div className="inline-block bg-rose-50 border border-rose-100 rounded-3xl px-10 sm:px-16 py-8 sm:py-10">
                         <p className="text-[12px] font-bold text-rose-400 uppercase tracking-widest mb-2">Your monthly bill</p>
                         <div className="font-headline font-extrabold text-rose-600 text-[3.5rem] sm:text-[4.5rem] lg:text-[5.5rem] leading-none">
-                            {formatINR(totalCost)}
+                            {formatUSD(totalCost)}
                         </div>
                         <p className="text-[14px] sm:text-[16px] text-rose-400 font-semibold mt-2">per month · every month · forever</p>
                     </div>
@@ -285,7 +285,7 @@ function SwitchSection({ triggered }: { triggered: boolean }) {
                             ))}
                         </div>
                         <p className="text-[12px] text-slate-400 font-semibold">20 employees</p>
-                        <p className="font-headline font-extrabold text-rose-400 text-[1.5rem]">₹3,00,000<span className="text-[12px] font-normal">/mo</span></p>
+                        <p className="font-headline font-extrabold text-rose-400 text-[1.5rem]">$50,000<span className="text-[12px] font-normal">/mo</span></p>
                     </div>
 
                     {/* Arrow / toggle */}
@@ -318,8 +318,8 @@ function SwitchSection({ triggered }: { triggered: boolean }) {
                                 </span>
                             </div>
                         </div>
-                        <p className="text-[12px] text-slate-400 font-semibold">1 Aura AI Agent</p>
-                        <p className="font-headline font-extrabold text-secondary text-[1.5rem]">₹9,999<span className="text-[12px] font-normal">/mo</span></p>
+                        <p className="text-[12px] text-slate-400 font-semibold">1 Xyras AI Agent</p>
+                        <p className="font-headline font-extrabold text-secondary text-[1.5rem]">$999<span className="text-[12px] font-normal">/mo</span></p>
                     </div>
                 </div>
 
@@ -329,9 +329,9 @@ function SwitchSection({ triggered }: { triggered: boolean }) {
                         <div className="inline-block bg-secondary/15 border border-secondary/30 rounded-2xl px-8 py-5">
                             <p className="text-[12px] font-bold text-teal-300 uppercase tracking-widest mb-1">Monthly Savings</p>
                             <p className="font-headline font-extrabold text-white text-[3rem] sm:text-[4rem]">
-                                ₹2,90,001
+                                $49,001
                             </p>
-                            <p className="text-[13px] text-teal-300 mt-1">That&apos;s ₹34.8 lakh saved every year</p>
+                            <p className="text-[13px] text-teal-300 mt-1">That&apos;s $588,012 saved every year</p>
                         </div>
                     </div>
                 )}
@@ -361,7 +361,7 @@ function CapabilitiesSection() {
                     <h2 className="font-headline font-extrabold text-primary text-[2rem] sm:text-[2.8rem] lg:text-[3.2rem] leading-tight mb-3">
                         The numbers side-by-side
                     </h2>
-                    <p className="text-slate-500 text-[15px]">20 human employees vs. 1 Aura AI</p>
+                    <p className="text-slate-500 text-[15px]">20 human employees vs. 1 Xyras AI</p>
                 </div>
 
                 {/* Comparison header */}
@@ -407,10 +407,10 @@ function CapabilitiesSection() {
 function CalculatorSection() {
     const { ref, visible } = useInView();
     const [staff, setStaff] = useState(20);
-    const [salary, setSalary] = useState(15000);
+    const [salary, setSalary] = useState(2500);
 
     const currentCost = staff * salary;
-    const auraCost = 9999;
+    const auraCost = 999;
     const monthlySaving = Math.max(0, currentCost - auraCost);
     const annualSaving = monthlySaving * 12;
     const roi = currentCost > 0 ? Math.round((monthlySaving / currentCost) * 100) : 0;
@@ -453,13 +453,13 @@ function CalculatorSection() {
                                     Average monthly salary
                                 </label>
                                 <span className="font-headline font-extrabold text-secondary text-[24px]">
-                                    ₹{salary.toLocaleString("en-IN")}
+                                    ${salary.toLocaleString("en-US")}
                                 </span>
                             </div>
-                            <input type="range" min={8000} max={35000} step={500} value={salary} onChange={e => setSalary(+e.target.value)}
+                            <input type="range" min={1500} max={8000} step={100} value={salary} onChange={e => setSalary(+e.target.value)}
                                 className="w-full accent-teal-600 h-2 cursor-pointer" />
                             <div className="flex justify-between text-[11px] text-slate-400 mt-1">
-                                <span>₹8,000</span><span>₹35,000</span>
+                                <span>$1,500</span><span>$8,000</span>
                             </div>
                         </div>
                     </div>
@@ -469,21 +469,21 @@ function CalculatorSection() {
                         <div className="text-center bg-rose-50 border border-rose-100 rounded-2xl p-5">
                             <p className="text-[11px] font-bold text-rose-400 uppercase tracking-wide mb-1">Your current cost</p>
                             <p className="font-headline font-extrabold text-rose-600 text-[1.5rem] sm:text-[1.8rem] leading-tight">
-                                {formatINR(currentCost)}
+                                {formatUSD(currentCost)}
                             </p>
                             <p className="text-[10px] text-rose-400 mt-0.5">per month</p>
                         </div>
 
                         <div className="text-center bg-slate-50 border border-slate-200 rounded-2xl p-5">
-                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Aura AI cost</p>
-                            <p className="font-headline font-extrabold text-slate-700 text-[1.5rem] sm:text-[1.8rem] leading-tight">₹9,999</p>
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Xyras AI cost</p>
+                            <p className="font-headline font-extrabold text-slate-700 text-[1.5rem] sm:text-[1.8rem] leading-tight">$999</p>
                             <p className="text-[10px] text-slate-400 mt-0.5">per month</p>
                         </div>
 
                         <div className="text-center bg-secondary/8 border border-secondary/20 rounded-2xl p-5">
                             <p className="text-[11px] font-bold text-secondary uppercase tracking-wide mb-1">Monthly savings</p>
                             <p className="font-headline font-extrabold text-secondary text-[1.5rem] sm:text-[1.8rem] leading-tight">
-                                {formatINR(monthlySaving)}
+                                {formatUSD(monthlySaving)}
                             </p>
                             <p className="text-[10px] text-secondary/70 mt-0.5">saved every month</p>
                         </div>
@@ -492,9 +492,9 @@ function CalculatorSection() {
                     {/* Annual highlight */}
                     <div className="bg-primary rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div>
-                            <p className="text-[12px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Annual savings with Aura</p>
+                            <p className="text-[12px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Annual savings with Xyras</p>
                             <p className="font-headline font-extrabold text-white text-[2rem] sm:text-[2.4rem] leading-tight">
-                                {formatINR(annualSaving)}
+                                {formatUSD(annualSaving)}
                             </p>
                         </div>
                         <div className="text-center bg-white/8 rounded-xl px-6 py-3 border border-white/10">
@@ -521,7 +521,7 @@ function FinalCTA() {
             <div className={`max-w-2xl mx-auto transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
                 <p className="text-teal-300 font-semibold text-[13px] uppercase tracking-widest mb-5">Ready to make the switch?</p>
                 <h2 className="font-headline font-extrabold text-white text-[2.2rem] sm:text-[3rem] lg:text-[3.5rem] leading-tight mb-6">
-                    Let Aura handle your calls.<br />
+                    Let Xyras handle your calls.<br />
                     Your staff can do the rest.
                 </h2>
                 <p className="text-slate-400 text-[15px] sm:text-[17px] leading-relaxed mb-10 max-w-lg mx-auto">
@@ -558,7 +558,9 @@ export default function StoryPage() {
                         <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
                             <span className="material-symbols-outlined text-white text-[15px]">graphic_eq</span>
                         </div>
-                        <span className="text-[14px] font-extrabold text-white font-headline">Aura Clinical</span>
+                        <span className="font-headline font-extrabold text-[16px] tracking-tight text-white">
+                          xyras<span className="text-secondary font-sans font-black">.</span>
+                        </span>
                     </Link>
                     <Link href="/#pricing"
                         className="bg-secondary text-white font-bold text-[12.5px] px-5 py-2 rounded-full hover:bg-secondary/90 transition-all">

@@ -1,31 +1,42 @@
 import type { Metadata } from "next";
-import { Manrope, Inter } from "next/font/google";
+import { DM_Serif_Display, Instrument_Sans, Space_Mono } from "next/font/google";
+import ClientProgress from "./components/ClientProgress";
+import SmoothScroll from "./components/SmoothScroll";
 import "./globals.css";
 
-const manrope = Manrope({
+const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
-  variable: "--font-manrope",
-  weight: ["600", "700", "800"],
+  variable: "--font-dm-serif",
+  weight: ["400"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
-const inter = Inter({
+const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ["400", "500", "600"],
+  variable: "--font-instrument",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  variable: "--font-space-mono",
+  weight: ["400", "700"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Xyras | AI-Powered Voice Triage for Hospitals",
+  title: "Xyras | Intelligent Voice AI for Hospitals",
   description:
-    "AI-powered multilingual triage system designed specifically for Indian hospitals. Answer every patient call instantly in Hindi, Tamil, Telugu, and 12+ languages.",
+    "Instant multilingual triage system. Answers 100% of concurrent inbound patient calls in 12+ Indian languages (Hindi, Tamil, Telugu) with zero wait times.",
   keywords: [
     "hospital AI",
     "voice triage",
     "multilingual healthcare",
     "patient call management",
     "Indian hospitals",
+    "Xyras AI",
   ],
 };
 
@@ -37,7 +48,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${inter.variable} scroll-smooth`}
+      className={`${dmSerif.variable} ${instrumentSans.variable} ${spaceMono.variable} scroll-smooth`}
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -51,7 +62,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-surface text-on-surface font-body antialiased">
+      <body className="min-h-full flex flex-col bg-surface text-primary font-body antialiased">
+        {/* Lenis Smooth Scroll */}
+        <SmoothScroll />
+        {/* Scroll Progress & Custom Cursor */}
+        <ClientProgress />
         {children}
       </body>
     </html>

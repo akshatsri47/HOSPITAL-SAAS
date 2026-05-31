@@ -1,25 +1,41 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
-const NAV_LINKS = [
-  { label: "Platform",     href: "#features",     hasArrow: true  },
-  { label: "Solutions",    href: "#solutions",    hasArrow: true  },
-  { label: "How It Works", href: "#how-it-works", hasArrow: false },
-  { label: "Pricing",      href: "#pricing",      hasArrow: false },
-  { label: "Customers",    href: "#testimonials", hasArrow: false },
+const CAPABILITIES = [
+  { label: "Voice Agents", desc: "Low-latency human-like voice agents", icon: "record_voice_over" },
+  { label: "Inbound Calls", desc: "Route and answer calls instantly 24/7", icon: "call_received" },
+  { label: "Outbound Calls", desc: "Automate high-volume lead qualification", icon: "call_made" },
+  { label: "Appointment Booking", desc: "Sync live calendars and log slots", icon: "calendar_today" },
+  { label: "Lead Qualification", desc: "Sift potential clients instantly", icon: "filter_alt" },
+  { label: "Customer Support", desc: "Resolve ticketing queries in seconds", icon: "support_agent" },
+];
+
+const SOLUTIONS = [
+  { label: "Healthcare", desc: "Triage patients, appointments, billing", icon: "local_hospital", href: "/healthcare" },
+  { label: "Real Estate", desc: "Qualify property leads & book viewings", icon: "home", href: "/real-estate" },
+  { label: "Restaurants", desc: "Automate booking table reservations", icon: "restaurant", href: "/restaurants" },
+  { label: "Automotive", desc: "Book test drives and scheduling", icon: "directions_car", href: "/automotive" },
+  { label: "Education", desc: "Nurture registrations & answer FAQs", icon: "school", href: "/#solutions" },
+  { label: "Financial Services", desc: "Answer ledger balances & card status", icon: "account_balance", href: "/#solutions" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [open,     setOpen]     = useState(false);
+  const [open, setOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [spinLogo, setSpinLogo] = useState(false);
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
+    setSpinLogo(true);
+    const fn = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", fn, { passive: true });
     fn();
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
   useEffect(() => {
     const fn = () => { if (window.innerWidth >= 1024) setOpen(false); };
     window.addEventListener("resize", fn);
@@ -27,115 +43,239 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex flex-col items-center pointer-events-none">
+    <header 
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? "bg-[#F8FAFC]/85 backdrop-blur-md border-b border-[#0E1726]/5 py-3 shadow-[0_1px_3px_rgba(14,23,38,0.02)]" 
+          : "bg-transparent border-b border-transparent py-5"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-8">
+        
+        {/* Logo left */}
+        <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
+          <svg 
+            className={`w-7 h-7 text-secondary transition-transform duration-1000 ease-out ${
+              spinLogo ? "rotate-[360deg]" : ""
+            }`} 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="m4.93 4.93 4.24 4.24" />
+            <path d="m14.83 9.17 4.24-4.24" />
+            <path d="m14.83 14.83 4.24 4.24" />
+            <path d="m9.17 14.83-4.24 4.24" />
+            <circle cx="12" cy="12" r="4" fill="currentColor" className="animate-pulse" />
+          </svg>
+          <span className="font-headline font-extrabold text-[20px] tracking-tight text-primary">
+            xyras<span className="text-secondary font-sans font-black">.</span>
+          </span>
+        </Link>
 
-      {/* ── Pill navbar — always floating, wider at top, tighter on scroll ── */}
-      <div
-        className="pointer-events-auto transition-all duration-500 mt-3"
-        style={{
-          /* At top: ~70% width  |  scrolled: ~60% width */
-          width: scrolled ? "min(62%, 900px)" : "min(75%, 1100px)",
-          background: scrolled
-            ? "rgba(255,255,255,0.80)"
-            : "rgba(255,255,255,0.92)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: "1px solid rgba(226,232,240,0.7)",
-          boxShadow: scrolled
-            ? "0 6px 36px rgba(15,23,42,0.13), 0 1px 4px rgba(15,23,42,0.07)"
-            : "0 2px 16px rgba(15,23,42,0.07)",
-          borderRadius: "9999px",
-        }}
-      >
-        <div
-          className="flex items-center justify-between gap-4"
-          style={{
-            padding: scrolled ? "0 20px" : "0 24px",
-            height:  scrolled ? "50px"   : "58px",
-            transition: "all 0.4s ease",
-          }}
-        >
-          {/* Logo */}
-          <a href="/" className="flex items-center flex-shrink-0">
-            <span
-              className="font-headline font-extrabold tracking-tight"
-              style={{
-                fontSize: scrolled ? "15px" : "17px",
-                background: "linear-gradient(90deg, #0D9488 0%, #0f766e 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                transition: "font-size 0.4s",
-              }}
-            >
-              xyras
-            </span>
-          </a>
-
-          {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-0 flex-1 justify-center">
-            {NAV_LINKS.map(({ label, href, hasArrow }) => (
-              <a key={label} href={href}
-                className="nav-link group relative flex items-center gap-0.5 px-3 py-2 text-[13px] font-medium text-slate-600 hover:text-primary transition-colors duration-200">
-                {label}
-                {hasArrow && (
-                  <span className="material-symbols-outlined text-[13px] text-slate-400 group-hover:text-slate-600 transition-colors">
-                    keyboard_arrow_down
-                  </span>
-                )}
-                <span className="absolute bottom-0.5 left-3 right-3 h-[2px] rounded-full bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-250 origin-left" />
-              </a>
-            ))}
-          </nav>
-
-          {/* Desktop CTAs */}
-          <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
-            <a href="#pricing" id="nav-try-free"
-              className="bg-secondary text-white text-[12.5px] font-bold px-4 py-2 rounded-full hover:bg-secondary/90 active:scale-[0.97] transition-all shadow-[0_2px_12px_rgba(13,148,136,0.35)] whitespace-nowrap">
-              Try it for free
-            </a>
-            <a href="#how-it-works" id="nav-view-demo"
-              className="border border-slate-200 bg-white/60 text-primary text-[12.5px] font-semibold px-4 py-2 rounded-full hover:border-secondary/50 hover:text-secondary transition-all whitespace-nowrap">
-              View demo
-            </a>
-          </div>
-
-          {/* Mobile hamburger */}
-          <div className="flex lg:hidden items-center gap-2">
-            <a href="#pricing" className="hidden sm:block bg-secondary text-white text-[12px] font-bold px-3.5 py-1.5 rounded-full hover:bg-secondary/90 transition-all shadow-[0_2px_8px_rgba(13,148,136,0.3)]">
-              Try it for free
-            </a>
-            <button onClick={() => setOpen(v => !v)} aria-label="Toggle menu"
-              className="w-9 h-9 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors">
-              <span className="material-symbols-outlined text-[20px]">{open ? "close" : "menu"}</span>
+        {/* Desktop Links Center */}
+        <nav className="hidden lg:flex items-center gap-6">
+          
+          {/* Products Hover Megamenu */}
+          <div 
+            className="relative"
+            onMouseEnter={() => setShowDropdown(true)}
+            onMouseLeave={() => setShowDropdown(false)}
+          >
+            <button className="relative px-3 py-2 text-[12.5px] font-mono uppercase tracking-wider text-[#334155] hover:text-[#0E1726] font-semibold transition-colors duration-200 cursor-pointer flex items-center gap-1">
+              Products
+              <span className={`material-symbols-outlined text-[15px] transition-transform duration-300 ${showDropdown ? "rotate-180 text-secondary" : ""}`}>
+                expand_more
+              </span>
             </button>
+            
+            <AnimatePresence>
+              {showDropdown && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-[700px] z-50 pointer-events-auto"
+                >
+                  <div 
+                    className="bg-white border border-[#0E1726]/8 rounded-[28px] p-6.5 shadow-card grid grid-cols-12 gap-8 relative overflow-hidden"
+                    style={{
+                      boxShadow: "0 24px 70px rgba(14,23,38,0.08), 0 1px 3px rgba(14,23,38,0.02)"
+                    }}
+                  >
+                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-secondary/2 via-transparent to-[#5B8DEF]/2" />
+                    
+                    {/* Left Column - Voice Platform */}
+                    <div className="col-span-7 space-y-4 z-10">
+                      <h6 className="font-mono text-[9px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#0E1726]/5 pb-2 mb-3">
+                        Voice Platform
+                      </h6>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                        {CAPABILITIES.map((item) => (
+                          <Link
+                            key={item.label}
+                            href="/#capabilities"
+                            className="flex items-start gap-3 p-1.5 rounded-xl hover:bg-[#F8FAFC] transition-all group text-left"
+                          >
+                            <div className="w-8.5 h-8.5 rounded-lg bg-[#0E1726]/5 text-[#0E1726]/70 flex items-center justify-center group-hover:bg-secondary group-hover:text-primary transition-colors flex-shrink-0">
+                              <span className="material-symbols-outlined text-[15px]">{item.icon}</span>
+                            </div>
+                            <div>
+                              <h5 className="text-[11.5px] font-bold text-[#0E1726] tracking-tight group-hover:text-secondary transition-colors">{item.label}</h5>
+                              <p className="text-[9.5px] text-[#64748B] leading-tight mt-0.5">{item.desc}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right Column - Industry Solutions */}
+                    <div className="col-span-5 space-y-4 z-10 border-l border-[#0E1726]/5 pl-6">
+                      <h6 className="font-mono text-[9px] font-bold text-slate-400 uppercase tracking-widest border-b border-[#0E1726]/5 pb-2 mb-3">
+                        Solutions
+                      </h6>
+                      <div className="grid grid-cols-1 gap-3">
+                        {SOLUTIONS.slice(0, 4).map((item) => (
+                          <Link
+                            key={item.label}
+                            href={item.href}
+                            className="flex items-start gap-3 p-1.5 rounded-xl hover:bg-[#F8FAFC] transition-all group text-left"
+                          >
+                            <div className="w-7.5 h-7.5 rounded-lg bg-[#0E1726]/5 text-[#0E1726]/60 flex items-center justify-center group-hover:bg-[#5B8DEF] group-hover:text-white transition-colors flex-shrink-0">
+                              <span className="material-symbols-outlined text-[14px]">{item.icon}</span>
+                            </div>
+                            <div>
+                              <h5 className="text-[11px] font-bold text-[#0E1726] tracking-tight group-hover:text-[#5B8DEF] transition-colors">{item.label}</h5>
+                              <p className="text-[9.5px] text-[#64748B] leading-snug mt-0.5">{item.desc}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
+          <Link 
+            href="/#capabilities"
+            className="relative px-3 py-2 text-[12.5px] font-mono uppercase tracking-wider text-[#334155] hover:text-[#0E1726] font-semibold transition-colors duration-200 group"
+          >
+            Platform
+            <span className="absolute bottom-1.5 left-3 right-3 h-[1.5px] rounded-full bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+          </Link>
+
+          <Link 
+            href="/pricing"
+            className="relative px-3 py-2 text-[12.5px] font-mono uppercase tracking-wider text-[#334155] hover:text-[#0E1726] font-semibold transition-colors duration-200 group"
+          >
+            Pricing
+            <span className="absolute bottom-1.5 left-3 right-3 h-[1.5px] rounded-full bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+          </Link>
+
+          <Link 
+            href="/manifesto"
+            className="relative px-3 py-2 text-[12.5px] font-mono uppercase tracking-wider text-[#334155] hover:text-[#0E1726] font-semibold transition-colors duration-200 group"
+          >
+            Manifesto
+            <span className="absolute bottom-1.5 left-3 right-3 h-[1.5px] rounded-full bg-[#0088FF] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+          </Link>
+        </nav>
+
+        {/* Desktop CTA right */}
+        <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+          <Link 
+            href="/pricing"
+            className="relative overflow-hidden inline-flex items-center justify-center font-bold text-[13px] uppercase tracking-wide px-5 py-2.5 rounded-full border border-secondary text-primary hover:text-primary transition-all duration-300"
+          >
+            <span className="absolute inset-0 bg-secondary/8 hover:bg-secondary/15 transition-colors" />
+            <span className="relative z-10 flex items-center gap-1">
+              Book Demo
+              <span className="material-symbols-outlined text-[15px]">bolt</span>
+            </span>
+          </Link>
         </div>
+
+        {/* Mobile menu trigger */}
+        <div className="lg:hidden flex items-center gap-2">
+          <Link 
+            href="/pricing" 
+            className="sm:inline-flex hidden bg-secondary text-primary font-bold text-[12px] uppercase tracking-wider px-4 py-2 rounded-full hover:bg-secondary/90 transition-all shadow-sm"
+          >
+            Book Demo
+          </Link>
+          <button 
+            onClick={() => setOpen(!open)} 
+            aria-label="Toggle menu"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-primary bg-[#0E1726]/5 hover:bg-[#0E1726]/10 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[22px]">{open ? "close" : "menu"}</span>
+          </button>
+        </div>
+
       </div>
 
-      {/* Mobile menu — drops below pill */}
+      {/* Mobile Drawer */}
       <div
-        className={`pointer-events-auto w-full lg:hidden overflow-hidden transition-all duration-300 ${open ? "max-h-[420px]" : "max-h-0"}`}
+        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? "max-h-[440px] border-b border-[#0E1726]/5" : "max-h-0"
+        }`}
         style={{
-          background: "rgba(255,255,255,0.97)",
+          background: "rgba(248, 250, 252, 0.96)",
           backdropFilter: "blur(20px)",
-          borderBottom: open ? "1px solid #E2E8F0" : "none",
         }}
       >
-        <nav className="section-px py-3 flex flex-col gap-0.5">
-          {NAV_LINKS.map(({ label, href }) => (
-            <a key={label} href={href} onClick={() => setOpen(false)}
-              className="px-4 py-3 text-[14px] font-medium text-slate-600 rounded-xl hover:bg-slate-50 hover:text-primary transition-all">
-              {label}
-            </a>
+        <nav className="flex flex-col px-6 py-4 gap-2">
+          <div className="px-4 py-2 text-[10px] font-mono uppercase tracking-[0.2em] text-[#64748B] border-b border-[#0E1726]/5 pb-1">
+            Industry Solutions
+          </div>
+          {SOLUTIONS.slice(0, 4).map((item) => (
+            <Link 
+              key={item.label} 
+              href={item.href} 
+              onClick={() => setOpen(false)}
+              className="px-4 py-2 text-[13px] font-mono uppercase tracking-wider text-[#334155] rounded-xl hover:bg-[#0E1726]/5 hover:text-primary font-bold transition-all flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[16px] text-secondary">{item.icon}</span>
+              {item.label}
+            </Link>
           ))}
-          <div className="mt-2 pt-3 border-t border-slate-100 flex flex-col gap-2 pb-2">
-            <a href="#pricing" className="w-full bg-secondary text-white text-[14px] font-bold py-3.5 rounded-full text-center hover:bg-secondary/90 transition-all shadow-[0_2px_12px_rgba(13,148,136,0.35)]">
-              Try it for free
-            </a>
-            <a href="#how-it-works" className="w-full border border-slate-200 text-primary text-[14px] font-semibold py-3.5 rounded-full text-center hover:bg-slate-50 transition-all">
-              View demo
-            </a>
+          <div className="h-px bg-[#0E1726]/5 my-1" />
+          <Link 
+            href="/#capabilities" 
+            onClick={() => setOpen(false)}
+            className="px-4 py-2 text-[13px] font-mono uppercase tracking-wider text-[#334155] rounded-xl hover:bg-[#0E1726]/5 hover:text-primary font-bold transition-all"
+          >
+            Platform
+          </Link>
+          <Link 
+            href="/pricing" 
+            onClick={() => setOpen(false)}
+            className="px-4 py-2 text-[13px] font-mono uppercase tracking-wider text-[#334155] rounded-xl hover:bg-[#0E1726]/5 hover:text-primary font-bold transition-all"
+          >
+            Pricing
+          </Link>
+          <Link 
+            href="/manifesto" 
+            onClick={() => setOpen(false)}
+            className="px-4 py-2 text-[13px] font-mono uppercase tracking-wider text-[#334155] rounded-xl hover:bg-[#0E1726]/5 hover:text-primary font-bold transition-all"
+          >
+            Manifesto
+          </Link>
+          <div className="mt-2 pt-3 border-t border-[#0A0A0F]/5 flex flex-col gap-2 pb-2">
+            <Link 
+              href="/pricing" 
+              onClick={() => setOpen(false)}
+              className="w-full bg-secondary text-primary font-bold py-3 text-center text-[13px] uppercase tracking-wide rounded-full shadow-sm"
+            >
+              Book Demo
+            </Link>
           </div>
         </nav>
       </div>

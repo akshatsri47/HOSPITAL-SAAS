@@ -1,65 +1,66 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Core brand ────────────────────────────────────── */
-  --color-primary:             #0F172A;   /* Slate-900  — dark headlines, dark buttons */
+  /* ── Core brand colors (Clinical Warmth) ────────────────────────── */
+  --color-primary:             #0E1726;   /* Deep Healthcare Navy */
   --color-on-primary:          #FFFFFF;
-  --color-primary-container:   #1E293B;   /* Slate-800 */
-  --color-on-primary-container:#CBD5E1;   /* Slate-300 */
-  --color-primary-fixed:       #E2E8F0;   /* Slate-200 */
-  --color-primary-fixed-dim:   #94A3B8;   /* Slate-400 */
-  --color-inverse-primary:     #94A3B8;
+  --color-primary-container:   #1E293B;   /* Elevated Navy */
+  --color-on-primary-container:#64748B;   /* Muted Slate */
+  --color-primary-fixed:       #334155;
+  --color-primary-fixed-dim:   #64748B;
+  --color-inverse-primary:     #5B8DEF;   /* Trust Blue */
 
-  /* ── Accent / brand teal ───────────────────────────── */
-  --color-secondary:           #0D9488;   /* Teal-600  — brand accent */
-  --color-on-secondary:        #FFFFFF;
-  --color-secondary-container: #CCFBF1;   /* Teal-100 */
+  /* ── Accent / Living Green / Signal Violet ─────────────────────── */
+  --color-secondary:           #00C2A8;   /* Medical Teal — life, active, voice */
+  --color-on-secondary:        #0E1726;
+  --color-secondary-container: #F0FDFA;   /* Active Container Teal */
   --color-on-secondary-container:#0F766E;
-  --color-secondary-fixed:     #5EEAD4;   /* Teal-300 */
-  --color-secondary-fixed-dim: #2DD4BF;   /* Teal-400 */
+  --color-secondary-fixed:     #5B8DEF;   /* Trust Blue */
+  --color-secondary-fixed-dim: #8EAFFF;
 
-  /* ── Utility ────────────────────────────────────────── */
-  --color-error:               #EF4444;
+  /* ── Utility ────────────────────────────────────────────────── */
+  --color-error:               #EF4444;   /* Alert Red */
   --color-on-error:            #FFFFFF;
-  --color-error-container:     #FEE2E2;
+  --color-error-container:     #FEF2F2;
 
-  /* ── Surface scale (white → light) ─────────────────── */
-  --color-surface:               #FFFFFF;
-  --color-on-surface:            #0F172A;
-  --color-surface-variant:       #F1F5F9;
-  --color-on-surface-variant:    #475569;
+  /* ── Surface scale (Cream / Card White) ─────────────────────── */
+  --color-surface:               #F8FAFC;   /* Soft Warm Cream BG */
+  --color-on-surface:            #0E1726;
+  --color-surface-variant:       #FFFFFF;   /* Card White */
+  --color-on-surface-variant:    #334155;
   --color-surface-container-lowest: #FFFFFF;
   --color-surface-container-low:    #F8FAFC;
   --color-surface-container:        #F1F5F9;
   --color-surface-container-high:   #E2E8F0;
   --color-surface-container-highest:#CBD5E1;
   --color-surface-dim:              #E2E8F0;
-  --color-inverse-surface:          #1E293B;
-  --color-inverse-on-surface:       #F1F5F9;
+  --color-inverse-surface:          #0E1726;
+  --color-inverse-on-surface:       #F8FAFC;
 
-  /* ── Background ─────────────────────────────────────── */
-  --color-background:    #FFFFFF;
-  --color-on-background: #0F172A;
+  /* ── Background ─────────────────────────────────────────────── */
+  --color-background:    #F8FAFC;
+  --color-on-background: #0E1726;
 
-  /* ── Borders ─────────────────────────────────────────── */
-  --color-outline:         #94A3B8;
-  --color-outline-variant: #E2E8F0;
+  /* ── Borders ─────────────────────────────────────────────────── */
+  --color-outline:         rgba(14,23,38,0.1);
+  --color-outline-variant: rgba(14,23,38,0.06);
 
-  /* ── Fonts ──────────────────────────────────────────── */
-  --font-headline: var(--font-manrope), sans-serif;
-  --font-body:     var(--font-inter),   sans-serif;
+  /* ── Typography (DM Serif Display, Instrument Sans, Space Mono) ── */
+  --font-headline: var(--font-dm-serif), serif;
+  --font-body:     var(--font-instrument), sans-serif;
+  --font-mono:     var(--font-space-mono), monospace;
 }
 
 /* ── Reset ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
-  background: #FFFFFF;
-  color: #0F172A;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  background: #F8FAFC;
+  color: #0E1726;
+  font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ── Material Symbols ─────────────────────────────────── */
@@ -73,132 +74,196 @@ body {
 }
 
 /* ── Section padding ──────────────────────────────────── */
-.section-px { padding-left: 1.25rem; padding-right: 1.25rem; }
-.section-py { padding-top: 4.5rem;   padding-bottom: 4.5rem; }
+.section-px { padding-left: 1.5rem; padding-right: 1.5rem; }
+.section-py { padding-top: 5rem;   padding-bottom: 5rem; }
 @media (min-width: 640px) {
-  .section-px { padding-left: 2rem;    padding-right: 2rem; }
-  .section-py { padding-top: 6rem;     padding-bottom: 6rem; }
+  .section-px { padding-left: 2.5rem;    padding-right: 2.5rem; }
+  .section-py { padding-top: 7rem;     padding-bottom: 7rem; }
 }
 @media (min-width: 1024px) {
-  .section-px { padding-left: 3rem;    padding-right: 3rem; }
-  .section-py { padding-top: 8rem;     padding-bottom: 8rem; }
+  .section-px { padding-left: 4rem;    padding-right: 4rem; }
+  .section-py { padding-top: 9rem;     padding-bottom: 9rem; }
 }
 
 /* ── Navbar glass ─────────────────────────────────────── */
 .glass-nav {
-  background: rgba(255,255,255,0.92);
+  background: rgba(248, 250, 252, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid #E2E8F0;
-  box-shadow: 0 1px 4px rgba(15,23,42,0.06);
+  border-bottom: 1px solid rgba(14, 23, 38, 0.05);
+  box-shadow: 0 1px 3px rgba(14, 23, 38, 0.02);
+}
+
+/* ── Thin Custom Scrollbar ──────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #F8FAFC;
+}
+::-webkit-scrollbar-thumb {
+  background: #0E1726;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* ── Scroll progress top bar ───────────────────────────── */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00C2A8 0%, #5B8DEF 100%);
+  z-index: 10000;
+  transition: width 0.1s ease-out;
 }
 
 /* ── Shadows ──────────────────────────────────────────── */
 .shadow-card {
   box-shadow:
-    0 1px 3px rgba(15,23,42,0.06),
-    0 4px 16px rgba(15,23,42,0.08),
-    0 24px 60px rgba(15,23,42,0.08);
+    0 1px 3px rgba(14,23,38,0.02),
+    0 8px 24px rgba(14,23,38,0.04),
+    0 24px 60px rgba(14,23,38,0.06);
 }
 .shadow-card-hover {
   box-shadow:
-    0 1px 3px rgba(15,23,42,0.08),
-    0 8px 32px rgba(15,23,42,0.12),
-    0 32px 80px rgba(15,23,42,0.10);
-}
-.shadow-browser {
-  box-shadow:
-    0 4px 8px rgba(15,23,42,0.06),
-    0 16px 48px rgba(15,23,42,0.12),
-    0 48px 100px rgba(15,23,42,0.14);
+    0 1px 4px rgba(14,23,38,0.04),
+    0 16px 36px rgba(14,23,38,0.08),
+    0 32px 80px rgba(14,23,38,0.08);
 }
 
-/* ── Teal gradient text ───────────────────────────────── */
+/* ── Bottom border hover sweep effect ───────────────────── */
+.card-hover-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.card-hover-sweep::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, #00C2A8 0%, #5B8DEF 100%);
+  transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.card-hover-sweep:hover::after {
+  width: 100%;
+}
+
+/* ── Custom Cursor (Lag/Trailing) ─────────────────────── */
+@media (pointer: fine) {
+  .custom-cursor-dot {
+    width: 6px;
+    height: 6px;
+    background: #00C2A8;
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, background-color 0.2s;
+  }
+  .custom-cursor-ring {
+    width: 22px;
+    height: 22px;
+    border: 1px solid rgba(0, 194, 168, 0.4);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 99998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.08s cubic-bezier(0.25, 1, 0.5, 1), width 0.2s, height 0.2s, border-color 0.2s;
+  }
+}
+
+/* ── Text highlight utilities ─────────────────────────── */
 .text-brand-gradient {
-  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 60%, #2DD4BF 100%);
+  background: linear-gradient(135deg, #00C2A8 0%, #5B8DEF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* ── Section gradients ────────────────────────────────── */
-.bg-teal-wash   { background: linear-gradient(180deg, #F0FDFA 0%, #FFFFFF 100%); }
-.bg-dark-cta    { background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F4C42 100%); }
-.bg-hero-tint   {
-  background:
-    radial-gradient(ellipse 80% 60% at 80% 50%, rgba(13,148,136,0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 50% at 20% 80%, rgba(15,23,42,0.03) 0%, transparent 60%),
-    #FFFFFF;
+/* ── Animation keyframes ─────────────────────────────── */
+@keyframes voiceOrbPulse {
+  0% { transform: scale(1); opacity: 0.9; box-shadow: 0 0 0 0 rgba(0, 214, 143, 0.4); }
+  70% { transform: scale(1.04); opacity: 1; box-shadow: 0 0 0 20px rgba(0, 214, 143, 0); }
+  100% { transform: scale(1); opacity: 0.9; box-shadow: 0 0 0 0 rgba(0, 214, 143, 0); }
+}
+@keyframes rippleExpand {
+  0% { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+@keyframes floatChar {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(3deg); }
+}
+@keyframes textSlideUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes badgeBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
-/* ── EQ bar keyframes ─────────────────────────────────── */
-@keyframes eq-a { 0%{height:3px} 100%{height:22px} }
-@keyframes eq-b { 0%{height:6px} 100%{height:30px} }
-@keyframes eq-c { 0%{height:4px} 100%{height:16px} }
-@keyframes eq-d { 0%{height:8px} 100%{height:26px} }
-@keyframes eq-e { 0%{height:2px} 100%{height:20px} }
-
-/* ── Other animations ─────────────────────────────────── */
-@keyframes floatCard {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-10px); }
-}
-@keyframes ping-slow {
-  0%   { transform: scale(1);   opacity: 0.6; }
-  70%  { transform: scale(1.6); opacity: 0;   }
-  100% { transform: scale(1.6); opacity: 0;   }
-}
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes pulseSlow {
-  0%, 100% { opacity: 0.07; transform: scale(1); }
-  50%       { opacity: 0.14; transform: scale(1.08); }
-}
-@keyframes borderSpin {
-  to { --angle: 360deg; }
-}
-
-.animate-float-card  { animation: floatCard 6s ease-in-out infinite; }
-.animate-ping-slow   { animation: ping-slow 2.2s ease-out infinite; }
-.animate-marquee     { animation: marquee 28s linear infinite; }
-.animate-pulse-slow  { animation: pulseSlow 6s ease-in-out infinite; }
-
-/* ── Marquee wrapper ──────────────────────────────────── */
-.marquee-track { display: flex; width: max-content; }
-.marquee-wrap  { overflow: hidden; }
-
-/* ── No-scrollbar (language tab strip) ───────────────── */
-.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
+.animate-voice-orb    { animation: voiceOrbPulse 2.2s infinite ease-in-out; }
+.animate-ripple-1     { animation: rippleExpand 2.2s infinite linear; }
+.animate-ripple-2     { animation: rippleExpand 2.2s infinite linear 0.73s; }
+.animate-ripple-3     { animation: rippleExpand 2.2s infinite linear 1.46s; }
+.animate-float-char   { animation: floatChar 8s ease-in-out infinite; }
+.animate-slide-up     { animation: textSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-marquee      { animation: marqueeScroll 24s linear infinite; }
+.animate-badge-bounce { animation: badgeBounce 3s infinite ease-in-out; }
 
 /* ── Scroll-triggered fade-up sections ───────────────── */
-/*   Add class "fade-up-section" to any section element.  */
-/*   JS adds "in-view" via IntersectionObserver.          */
 .fade-up-section {
   opacity: 0;
   transform: translateY(28px);
-  transition: opacity 0.65s cubic-bezier(0.22, 0.61, 0.36, 1),
-              transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .fade-up-section.in-view {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* ── Footer social icon hover color fill ─────────────── */
-.footer-social:hover {
-  color: var(--hover-color, #0D9488);
-  background: rgba(255,255,255,0.06);
+/* ── Typography presets ──────────────────────────────── */
+body {
+  font-size: 15px;
+  line-height: 1.7;
 }
 
-/* ── Global typography upgrades ──────────────────────── */
-body {
-  font-size: 17px;        /* up from 16px — more confident */
-  line-height: 1.75;      /* airy, premium feel */
-}
+/* ── Lenis Smooth Scrolling Custom Overrides ─────────────── */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* ── Scrollbar-hide utility ─────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
