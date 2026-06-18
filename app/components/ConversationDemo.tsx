@@ -399,6 +399,8 @@ export default function ConversationDemo() {
   const [buttonState,  setButtonState]  = useState<"play"|"loading"|"playing"|"replay">("play");
   const [audioMode,    setAudioMode]    = useState<"file"|"tts"|"speech"|"unavailable"|"idle">("idle");
   const [isMuted,      setIsMuted]      = useState(false);
+  const [ttsErrorReason, setTtsErrorReason] = useState<string | null>(null);
+  const [geminiStatus, setGeminiStatus] = useState<"unknown"|"ok"|"error">("unknown");
 
   // ── Voice preview state ──
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
@@ -417,6 +419,51 @@ export default function ConversationDemo() {
 
   // Keep muted ref in sync
   useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
+
+  // ── Auto-check Gemini connectivity on mount ──
+  // Only marks as "error" for permanent failures (expired key, invalid key)
+  // Quota exceeded (429) is TEMPORARY and treated as "ok" — resets in ~60s
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/tts/check");
+        const data = await res.json() as {
+          ok: boolean;
+          workingKeys?: number;
+          quotaExceededKeys?: number;
+          failedKeys?: number;
+          totalKeys?: number;
+          keys?: { ok: boolean; isQuota?: boolean; httpStatus?: number; error?: string }[];
+        };
+
+        if (data.ok) {
+          log("Gemini TTS check: ✓ At least one key working");
+          setGeminiStatus("ok");
+          return;
+        }
+
+        // Check if ALL failures are quota (temporary) — treat as OK
+        const allQuota = data.keys?.every(k => k.ok || (k as { isQuota?: boolean }).isQuota);
+        if (allQuota) {
+          log("Gemini TTS check: All keys quota-limited (temporary — resets in ~60s)");
+          setGeminiStatus("ok"); // quota resets automatically — don't show error
+          return;
+        }
+
+        // Permanent failure (expired/invalid key)
+        const failedKey = data.keys?.find(k => !k.ok && !(k as { isQuota?: boolean }).isQuota);
+        const reason = failedKey?.error ?? "API key invalid or expired";
+        log(`Gemini TTS check: Permanent failure — ${reason}`);
+        setGeminiStatus("error");
+        setTtsErrorReason(reason);
+      } catch (e) {
+        log("Gemini TTS check: network error", e);
+        // Don't mark as error for network issues — could be dev server starting up
+        setGeminiStatus("unknown");
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Intersection observer
   useEffect(() => {
@@ -626,6 +673,7 @@ export default function ConversationDemo() {
     if (localAudio) {
       log("Local MP3 found — playing file");
       setButtonState("playing");
+      setTtsErrorReason(null);
       playWithFile(localAudio);
       return;
     }
@@ -639,12 +687,18 @@ export default function ConversationDemo() {
     if ("result" in ttsResponse) {
       log("Gemini TTS success — playing generated audio blob");
       setButtonState("playing");
+      setTtsErrorReason(null);
+      setGeminiStatus("ok");
       playWithTTS(ttsResponse.result);
       return;
     }
 
-    // Gemini failed — log reason and fall back
-    log("Gemini TTS failed, falling back to SpeechSynthesis", ttsResponse.error);
+    // Gemini failed — record reason, log clearly, then fallback
+    const errReason = ttsResponse.error.details ?? ttsResponse.error.error;
+    setTtsErrorReason(errReason);
+    setGeminiStatus("error");
+    console.error("[ConversationDemo] Gemini TTS failed:", ttsResponse.error);
+    log("Gemini TTS failed, falling back to SpeechSynthesis.", ttsResponse.error);
 
     // ── Step 3: SpeechSynthesis / visual-only ──
     log("Using browser SpeechSynthesis fallback");
@@ -926,39 +980,67 @@ export default function ConversationDemo() {
             <span className="material-symbols-outlined text-[18px]">{isMuted ? "volume_off" : "volume_up"}</span>
           </motion.button>
 
-          {/* ── Audio Source Badge ── */}
-          <AnimatePresence mode="wait">
-            {audioMode !== "idle" && (
+          {/* ── Audio Source Badge + Gemini Status ── */}
+          <div className="flex flex-col gap-1.5">
+
+            {/* Pre-check badge: only show for permanent failures, not quota (quota is temporary) */}
+            {audioMode === "idle" && geminiStatus === "error" && (
               <motion.div
-                key={audioMode}
-                initial={{ opacity: 0, scale: 0.85, y: 4 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.85, y: 4 }}
-                transition={{ duration: 0.2 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-mono text-[9px] font-bold uppercase tracking-wider ${
-                  audioMode === "tts"
-                    ? "bg-secondary/10 border-secondary/40 text-secondary"
-                    : audioMode === "file"
-                    ? "bg-blue-50 border-blue-200 text-blue-700"
-                    : audioMode === "speech"
-                    ? "bg-amber-50 border-amber-200 text-amber-700"
-                    : "bg-red-50 border-red-200 text-red-600"
-                }`}
+                initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-mono text-[9px] font-bold bg-red-50 border-red-200 text-red-600"
               >
-                <span className="material-symbols-outlined text-[11px]">
-                  {audioMode === "tts"     ? "neurology"
-                  : audioMode === "file"   ? "audio_file"
-                  : audioMode === "speech" ? "record_voice_over"
-                  :                          "volume_off"}
-                </span>
-                {audioMode === "tts"     ? "Audio: Gemini TTS"
-                : audioMode === "file"   ? "Audio: Local MP3"
-                : audioMode === "speech" ? "Audio: Browser Voice"
-                :                          "Audio: Visual Only"}
+                <span className="material-symbols-outlined text-[11px]">error_outline</span>
+                Gemini TTS: Key Invalid
               </motion.div>
             )}
-          </AnimatePresence>
-        </div>
+
+            {/* Active audio source badge */}
+            <AnimatePresence mode="wait">
+              {audioMode !== "idle" && (
+                <motion.div
+                  key={audioMode}
+                  initial={{ opacity: 0, scale: 0.85, y: 4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.85, y: 4 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-col gap-1"
+                >
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-mono text-[9px] font-bold uppercase tracking-wider ${
+                    audioMode === "tts"
+                      ? "bg-secondary/10 border-secondary/40 text-secondary"
+                      : audioMode === "file"
+                      ? "bg-blue-50 border-blue-200 text-blue-700"
+                      : audioMode === "speech"
+                      ? "bg-amber-50 border-amber-200 text-amber-700"
+                      : "bg-red-50 border-red-200 text-red-600"
+                  }`}>
+                    <span className="material-symbols-outlined text-[11px]">
+                      {audioMode === "tts"     ? "neurology"
+                      : audioMode === "file"   ? "audio_file"
+                      : audioMode === "speech" ? "record_voice_over"
+                      :                          "volume_off"}
+                    </span>
+                    {audioMode === "tts"     ? "Audio: Gemini TTS"
+                    : audioMode === "file"   ? "Audio: Local MP3"
+                    : audioMode === "speech" ? "Audio: Browser Voice"
+                    :                          "Audio: Visual Only"}
+                  </div>
+
+                  {/* Show Gemini error reason if browser voice is active */}
+                  {audioMode === "speech" && ttsErrorReason && (
+                    <div className="flex items-start gap-1 px-2 py-1 rounded-lg bg-red-50 border border-red-100 max-w-[260px]">
+                      <span className="material-symbols-outlined text-[10px] text-red-400 mt-[1px] flex-shrink-0">info</span>
+                      <span className="font-mono text-[8px] text-red-600 leading-tight break-words">
+                        Gemini failed: {ttsErrorReason}
+                      </span>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+        </div> {/* end play button row */}
 
         {/* ── Call Card ── */}
         <motion.div
