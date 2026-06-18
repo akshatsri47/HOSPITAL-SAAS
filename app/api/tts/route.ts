@@ -9,42 +9,45 @@ const SAMPLE_RATE = 24000;
 const BITS_PER_SAMPLE = 16;
 const NUM_CHANNELS = 1;
 
-// ── Supported Gemini Prebuilt Voices ──
-// All 30 verified voices from gemini-2.5-flash-tts
+// ── Verified Gemini Prebuilt Voices (30 total, all confirmed for gemini-2.5-flash-tts) ──
 const GEMINI_VOICE_MAP: Record<string, string> = {
-  // Named voices mapped to Gemini voice names
-  aarav:  "Kore",          // Male, Natural/Firm
-  meera:  "Zephyr",        // Female, Calm/Bright
-  rohan:  "Puck",          // Male, Professional/Upbeat
-  anika:  "Leda",          // Female, Friendly/Youthful
-  aryan:  "Charon",        // Male, Confident/Deep
-  kavya:  "Aoede",         // Female, Clear/Musical
-  dev:    "Fenrir",        // Male, Strong
-  priya:  "Sulafat",       // Female, Warm
+  aarav: "Kore",     // Male, Natural/Firm
+  meera: "Zephyr",   // Female, Calm/Bright
+  rohan: "Puck",     // Male, Professional/Upbeat
+  anika: "Leda",     // Female, Friendly/Youthful
+  aryan: "Charon",   // Male, Confident/Deep
+  kavya: "Aoede",    // Female, Clear/Musical
+  dev:   "Fenrir",   // Male, Strong
+  priya: "Sulafat",  // Female, Warm
 };
 
-// Fallback Gemini voices if a requested voice is not in the map
 const DEFAULT_CALLER_VOICE = "Kore";
 const DEFAULT_AGENT_VOICE  = "Zephyr";
 
-/**
- * Maps a frontend voice ID to a valid Gemini voice name.
- * Falls back to default if the ID is not found.
- */
+// ── Language display names for Gemini prompt ──
+const LANGUAGE_NAMES: Record<string, string> = {
+  "en-IN": "English",
+  "hi-IN": "Hindi",
+  "ta-IN": "Tamil",
+  "te-IN": "Telugu",
+  "es-ES": "Spanish",
+  "de-DE": "German",
+};
+
 function resolveGeminiVoice(voiceId: string | undefined, isAgent: boolean): string {
   if (!voiceId) return isAgent ? DEFAULT_AGENT_VOICE : DEFAULT_CALLER_VOICE;
   const resolved = GEMINI_VOICE_MAP[voiceId.toLowerCase()];
   if (!resolved) {
-    console.warn(`Unknown voice ID "${voiceId}", falling back to default.`);
+    console.warn(`[TTS] Unknown voice ID "${voiceId}", using default`);
     return isAgent ? DEFAULT_AGENT_VOICE : DEFAULT_CALLER_VOICE;
   }
   return resolved;
 }
 
-// ── WAV Helpers ──
+// ── WAV helpers ──
 
 function createWavHeader(pcmDataLength: number): Buffer {
-  const header = Buffer.alloc(44);
+  const header     = Buffer.alloc(44);
   const byteRate   = SAMPLE_RATE * NUM_CHANNELS * (BITS_PER_SAMPLE / 8);
   const blockAlign = NUM_CHANNELS * (BITS_PER_SAMPLE / 8);
 
@@ -61,7 +64,6 @@ function createWavHeader(pcmDataLength: number): Buffer {
   header.writeUInt16LE(BITS_PER_SAMPLE, 34);
   header.write("data", 36);
   header.writeUInt32LE(pcmDataLength, 40);
-
   return header;
 }
 
@@ -70,17 +72,21 @@ function generateSilence(durationMs: number): Buffer {
   return Buffer.alloc(numSamples * (BITS_PER_SAMPLE / 8));
 }
 
-// ── Gemini Speech Generation ──
+// ── Gemini speech generation ──
 
 async function generateSpeech(
   text: string,
   voiceName: string,
+  languageName: string,
   apiKey: string
 ): Promise<Buffer> {
   const url = `${GEMINI_API_BASE}/${GEMINI_TTS_MODEL}:generateContent?key=${apiKey}`;
 
+  // Instruct Gemini to speak in the correct language using the exact provided text
+  const promptText = `Speak naturally in ${languageName}. Read exactly this text aloud as spoken conversation: ${text}`;
+
   const requestBody = {
-    contents: [{ parts: [{ text }] }],
+    contents: [{ parts: [{ text: promptText }] }],
     generationConfig: {
       responseModalities: ["AUDIO"],
       speechConfig: {
@@ -98,72 +104,103 @@ async function generateSpeech(
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Gemini TTS API error (${response.status}) voice="${voiceName}":`, errorText);
-    throw new Error(`Gemini TTS API returned ${response.status}`);
+    // Log full error server-side (safe — API key is in URL param only, not in logs)
+    let errorBody = "(unreadable)";
+    try { errorBody = await response.text(); } catch { /* ignore */ }
+    console.error(
+      `[TTS] Gemini API error — status=${response.status} voice=${voiceName} lang=${languageName}`,
+      errorBody.slice(0, 500) // truncate to avoid log bloat
+    );
+    throw new Error(`Gemini API responded with HTTP ${response.status}`);
   }
 
   const data = await response.json();
   const candidates = data?.candidates;
 
-  if (!candidates?.length) throw new Error("No candidates in Gemini TTS response");
+  if (!candidates?.length) {
+    console.error("[TTS] Gemini returned no candidates. Full response:", JSON.stringify(data).slice(0, 500));
+    throw new Error("No candidates in Gemini response");
+  }
 
   const parts = candidates[0]?.content?.parts;
-  if (!parts?.length) throw new Error("No parts in Gemini TTS response");
+  if (!parts?.length) {
+    throw new Error("No content parts in Gemini response");
+  }
 
   const audioPart = parts.find(
     (p: { inlineData?: { mimeType: string; data: string } }) =>
       p.inlineData?.mimeType?.startsWith("audio/")
   );
 
-  if (!audioPart?.inlineData?.data)
-    throw new Error("No audio data in Gemini TTS response");
+  if (!audioPart?.inlineData?.data) {
+    console.error("[TTS] No audio inlineData found in parts:", JSON.stringify(parts).slice(0, 500));
+    throw new Error("No audio data in Gemini response");
+  }
 
+  console.log(`[TTS] ✓ Audio generated — voice=${voiceName} lang=${languageName} size=${audioPart.inlineData.data.length} chars (base64)`);
   return Buffer.from(audioPart.inlineData.data, "base64");
 }
 
-// ── Route Handler ──
+// ── Route handler ──
 
 export async function POST(req: NextRequest) {
+  const startTime = Date.now();
+
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      console.error("GEMINI_API_KEY is not set");
-      return NextResponse.json({ error: "TTS service not configured" }, { status: 503 });
-    }
-
-    const body = await req.json();
-    const { callerText, agentText, callerVoice, agentVoice } = body;
-
-    if (!callerText || !agentText) {
+      console.error("[TTS] GEMINI_API_KEY is missing from environment");
       return NextResponse.json(
-        { error: "Missing callerText or agentText" },
-        { status: 400 }
+        { error: "TTS service not configured", details: "GEMINI_API_KEY not set" },
+        { status: 503 }
       );
     }
 
-    // Resolve voice names (with fallback safety)
+    const body = await req.json();
+    const {
+      callerText,
+      agentText,
+      callerVoice,
+      agentVoice,
+      language = "en-IN",
+      industry = "unknown",
+    } = body;
+
+    if (!callerText || typeof callerText !== "string") {
+      return NextResponse.json({ error: "Missing or invalid callerText" }, { status: 400 });
+    }
+    if (!agentText || typeof agentText !== "string") {
+      return NextResponse.json({ error: "Missing or invalid agentText" }, { status: 400 });
+    }
+
     const resolvedCallerVoice = resolveGeminiVoice(callerVoice, false);
     const resolvedAgentVoice  = resolveGeminiVoice(agentVoice, true);
+    const languageName        = LANGUAGE_NAMES[language] ?? "English";
 
-    console.log(`TTS: caller="${resolvedCallerVoice}", agent="${resolvedAgentVoice}"`);
+    console.log(
+      `[TTS] Request — industry=${industry} lang=${language}(${languageName}) callerVoice=${resolvedCallerVoice} agentVoice=${resolvedAgentVoice}`
+    );
 
     // Generate both audio segments in parallel
     const [callerPcm, agentPcm] = await Promise.all([
-      generateSpeech(callerText, resolvedCallerVoice, apiKey),
-      generateSpeech(agentText,  resolvedAgentVoice,  apiKey),
+      generateSpeech(callerText, resolvedCallerVoice, languageName, apiKey),
+      generateSpeech(agentText,  resolvedAgentVoice,  languageName, apiKey),
     ]);
 
     // Concatenate: caller + 1.5s silence + agent
-    const silenceGap     = generateSilence(1500);
-    const combinedPcm    = Buffer.concat([callerPcm, silenceGap, agentPcm]);
-    const wavHeader      = createWavHeader(combinedPcm.length);
-    const wavFile        = Buffer.concat([wavHeader, combinedPcm]);
+    const silenceGap  = generateSilence(1500);
+    const combinedPcm = Buffer.concat([callerPcm, silenceGap, agentPcm]);
+    const wavHeader   = createWavHeader(combinedPcm.length);
+    const wavFile     = Buffer.concat([wavHeader, combinedPcm]);
 
     // Compute exact timing for frontend visual sync
     const bytesPerMs       = (SAMPLE_RATE * (BITS_PER_SAMPLE / 8)) / 1000;
     const callerDurationMs = Math.floor(callerPcm.length / bytesPerMs);
     const agentDurationMs  = Math.floor(agentPcm.length  / bytesPerMs);
+
+    console.log(
+      `[TTS] ✓ Complete — callerMs=${callerDurationMs} agentMs=${agentDurationMs} totalBytes=${wavFile.length} elapsed=${Date.now() - startTime}ms`
+    );
 
     return new NextResponse(wavFile, {
       status: 200,
@@ -175,16 +212,16 @@ export async function POST(req: NextRequest) {
         "X-Silence-Gap-Ms":     "1500",
         "X-Caller-Voice":       resolvedCallerVoice,
         "X-Agent-Voice":        resolvedAgentVoice,
-        "Cache-Control":        "public, max-age=3600",
+        "X-Audio-Source":       "gemini-tts",
+        // Do not cache — each request may use different voice/language
+        "Cache-Control":        "no-store",
       },
     });
   } catch (error) {
-    console.error("TTS generation error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(`[TTS] ✗ Failed after ${Date.now() - startTime}ms:`, message);
     return NextResponse.json(
-      {
-        error: "Failed to generate audio",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Gemini TTS failed", details: message },
       { status: 500 }
     );
   }

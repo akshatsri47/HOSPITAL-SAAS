@@ -1,5 +1,9 @@
 "use client";
 
+// Safe dev-only logging — never logs API keys or secrets
+const DEV = process.env.NODE_ENV === "development";
+const log = (...args: unknown[]) => { if (DEV) console.log("[ConversationDemo]", ...args); };
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -287,25 +291,57 @@ interface TtsResult {
   silenceGapMs: number;
 }
 
+interface TtsError {
+  error: string;
+  details?: string;
+}
+
 async function generateGeminiTTS(
-  callerText: string, agentText: string,
-  callerVoice: string, agentVoice: string
-): Promise<TtsResult | null> {
+  callerText: string,
+  agentText: string,
+  callerVoice: string,
+  agentVoice: string,
+  industry: string,
+  language: string
+): Promise<{ result: TtsResult } | { error: TtsError }> {
   try {
+    const payload = { callerText, agentText, callerVoice, agentVoice, industry, language };
+    // NOTE: payload logged safely — no API key here, that lives server-side only
+    log("Calling /api/tts with payload:", { ...payload, callerText: callerText.slice(0, 40) + "...", agentText: agentText.slice(0, 40) + "..." });
+
     const res = await fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ callerText, agentText, callerVoice, agentVoice }),
+      body: JSON.stringify(payload),
     });
-    if (!res.ok) return null;
+
+    if (!res.ok) {
+      // Try to read structured error from backend
+      let errData: TtsError = { error: `HTTP ${res.status}` };
+      try { errData = await res.json(); } catch { /* ignore parse error */ }
+      log("Gemini TTS failed — server returned:", errData);
+      return { error: errData };
+    }
+
+    const contentType = res.headers.get("Content-Type") ?? "";
+    if (!contentType.includes("audio")) {
+      const text = await res.text();
+      log("Gemini TTS returned non-audio content-type:", contentType, text.slice(0, 200));
+      return { error: { error: "Non-audio response", details: contentType } };
+    }
+
     const callerDurationMs = parseInt(res.headers.get("X-Caller-Duration-Ms") || "3000", 10);
     const agentDurationMs  = parseInt(res.headers.get("X-Agent-Duration-Ms")  || "4000", 10);
     const silenceGapMs     = parseInt(res.headers.get("X-Silence-Gap-Ms")     || "1500", 10);
+    const audioSource      = res.headers.get("X-Audio-Source") ?? "gemini-tts";
+
     const audioBlob = await res.blob();
-    return { audioBlob, callerDurationMs, agentDurationMs, silenceGapMs };
+    log(`Gemini TTS success — source=${audioSource} callerMs=${callerDurationMs} agentMs=${agentDurationMs} blobSize=${audioBlob.size}`);
+    return { result: { audioBlob, callerDurationMs, agentDurationMs, silenceGapMs } };
   } catch (e) {
-    console.warn("Gemini TTS failed:", e);
-    return null;
+    const msg = e instanceof Error ? e.message : String(e);
+    log("Gemini TTS network/fetch error:", msg);
+    return { error: { error: "Fetch failed", details: msg } };
   }
 }
 
@@ -361,7 +397,7 @@ export default function ConversationDemo() {
   const [callTimer,    setCallTimer]    = useState(0);
   const [callStatus,   setCallStatus]   = useState("Live call simulation");
   const [buttonState,  setButtonState]  = useState<"play"|"loading"|"playing"|"replay">("play");
-  const [audioMode,    setAudioMode]    = useState<"file"|"tts"|"speech"|"unavailable">("speech");
+  const [audioMode,    setAudioMode]    = useState<"file"|"tts"|"speech"|"unavailable"|"idle">("idle");
   const [isMuted,      setIsMuted]      = useState(false);
 
   // ── Voice preview state ──
@@ -578,20 +614,40 @@ export default function ConversationDemo() {
 
     setIsPlaying(true);
     setButtonState("loading");
+    setAudioMode("idle");
     setUserClicked(true);
     stopAllAudio(audioRef, blobUrlRef, timersRef);
 
     const d = getDialogue();
 
-    // 1. Try local MP3
+    // ── Step 1: Try local MP3 ──
+    log("Trying local MP3...");
     const localAudio = await tryLoadLocalAudio(activeTab, activeLang, callerVoiceId, agentVoiceId);
-    if (localAudio) { setButtonState("playing"); playWithFile(localAudio); return; }
+    if (localAudio) {
+      log("Local MP3 found — playing file");
+      setButtonState("playing");
+      playWithFile(localAudio);
+      return;
+    }
+    log("Local MP3 not found — trying Gemini TTS...");
 
-    // 2. Try Gemini TTS
-    const ttsResult = await generateGeminiTTS(d.caller, d.ai, callerVoiceId, agentVoiceId);
-    if (ttsResult) { setButtonState("playing"); playWithTTS(ttsResult); return; }
+    // ── Step 2: Try Gemini TTS ──
+    const ttsResponse = await generateGeminiTTS(
+      d.caller, d.ai, callerVoiceId, agentVoiceId, activeTab, activeLang
+    );
 
-    // 3. SpeechSynthesis / visual-only
+    if ("result" in ttsResponse) {
+      log("Gemini TTS success — playing generated audio blob");
+      setButtonState("playing");
+      playWithTTS(ttsResponse.result);
+      return;
+    }
+
+    // Gemini failed — log reason and fall back
+    log("Gemini TTS failed, falling back to SpeechSynthesis", ttsResponse.error);
+
+    // ── Step 3: SpeechSynthesis / visual-only ──
+    log("Using browser SpeechSynthesis fallback");
     setButtonState("playing");
     playWithSpeech();
   };
@@ -844,7 +900,7 @@ export default function ConversationDemo() {
         </AnimatePresence>
 
         {/* ── Play Button Row ── */}
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-6 flex flex-wrap items-center gap-3">
           <motion.button
             onClick={handlePlayDemo}
             disabled={buttonState === "loading"}
@@ -870,14 +926,38 @@ export default function ConversationDemo() {
             <span className="material-symbols-outlined text-[18px]">{isMuted ? "volume_off" : "volume_up"}</span>
           </motion.button>
 
-          {/* Audio unavailable notice */}
-          {audioMode === "unavailable" && isPlaying && (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-700">
-              <span className="material-symbols-outlined text-[12px]">info</span>
-              <span className="font-mono text-[9px] font-bold">Audio demo unavailable in this browser</span>
-            </motion.div>
-          )}
+          {/* ── Audio Source Badge ── */}
+          <AnimatePresence mode="wait">
+            {audioMode !== "idle" && (
+              <motion.div
+                key={audioMode}
+                initial={{ opacity: 0, scale: 0.85, y: 4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.85, y: 4 }}
+                transition={{ duration: 0.2 }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-mono text-[9px] font-bold uppercase tracking-wider ${
+                  audioMode === "tts"
+                    ? "bg-secondary/10 border-secondary/40 text-secondary"
+                    : audioMode === "file"
+                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                    : audioMode === "speech"
+                    ? "bg-amber-50 border-amber-200 text-amber-700"
+                    : "bg-red-50 border-red-200 text-red-600"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[11px]">
+                  {audioMode === "tts"     ? "neurology"
+                  : audioMode === "file"   ? "audio_file"
+                  : audioMode === "speech" ? "record_voice_over"
+                  :                          "volume_off"}
+                </span>
+                {audioMode === "tts"     ? "Audio: Gemini TTS"
+                : audioMode === "file"   ? "Audio: Local MP3"
+                : audioMode === "speech" ? "Audio: Browser Voice"
+                :                          "Audio: Visual Only"}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* ── Call Card ── */}
