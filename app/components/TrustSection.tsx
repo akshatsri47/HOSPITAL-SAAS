@@ -75,28 +75,37 @@ export default function TrustSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: idx * 0.08 }}
-              className="group relative bg-white border border-[#0E1726]/8 rounded-3xl p-6 sm:p-8 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 card-hover-sweep cursor-default"
+              className="group relative bg-white border border-[#0E1726]/8 rounded-3xl p-6 sm:p-8 hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-default"
+              data-cursor="card"
             >
-              {/* Top border sweep visual */}
-              <div className="absolute inset-x-0 top-0 h-[2.5px] bg-[#5B8DEF] rounded-t-3xl scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+              {/* Top sweep line */}
+              <div className="absolute inset-x-0 top-0 h-[2.5px] bg-gradient-to-r from-[#00C2A8] to-[#5B8DEF] rounded-t-3xl scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
 
-              {/* Title & Badge */}
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="w-11 h-11 rounded-xl bg-[#0E1726] text-white flex items-center justify-center transition-transform duration-300 group-hover:scale-105 flex-shrink-0">
-                  <span className="material-symbols-outlined text-[18px] text-secondary" style={{ fontVariationSettings: '"FILL" 1' }}>
-                    {icon}
-                  </span>
-                </div>
-                <span className="font-mono text-[9px] font-bold text-[#64748B] bg-[#0E1726]/5 border border-[#0E1726]/10 px-2.5 py-1 rounded-md uppercase tracking-wider">
-                  {badge}
+              {/* Subtle glow bg on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-secondary/0 to-secondary/0 group-hover:from-secondary/2 group-hover:to-[#5B8DEF]/2 transition-all duration-500 pointer-events-none rounded-3xl" />
+
+              {/* Step number */}
+              <span className="absolute top-6 right-6 font-mono text-[10px] font-bold text-slate-200 select-none">
+                0{idx + 1}
+              </span>
+
+              {/* Icon */}
+              <div className="w-12 h-12 rounded-2xl bg-[#0E1726] flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110 flex-shrink-0 relative z-10">
+                <span className="material-symbols-outlined text-[20px] text-secondary" style={{ fontVariationSettings: '"FILL" 1' }}>
+                  {icon}
                 </span>
               </div>
 
+              {/* Badge */}
+              <span className="inline-block font-mono text-[9px] font-bold text-secondary bg-secondary/8 border border-secondary/15 px-2.5 py-1 rounded-md uppercase tracking-wider mb-3 relative z-10">
+                {badge}
+              </span>
+
               {/* Text */}
-              <h3 className="font-headline font-bold text-[#0E1726] text-[17px] sm:text-[18px] mb-2">
+              <h3 className="font-headline font-bold text-[#0E1726] text-[17px] sm:text-[18px] mb-2 relative z-10">
                 {title}
               </h3>
-              <p className="text-[#64748B] text-[13.5px] sm:text-[14px] leading-relaxed">
+              <p className="text-[#64748B] text-[13.5px] sm:text-[14px] leading-relaxed relative z-10">
                 {desc}
               </p>
             </motion.div>

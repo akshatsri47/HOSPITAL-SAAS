@@ -1,24 +1,78 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+
+const TESTIMONIALS = [
+  {
+    quote:
+      "Xyras reduced our missed appointment calls by over 80% in the first month. Patients now get instant responses in Hindi and Tamil — something our front desk simply couldn't do at 2 AM.",
+    author: "Dr. Meera Pillai",
+    role: "CMO, Fortis Group Hospitals",
+    industry: "Healthcare",
+    icon: "local_hospital",
+    accentColor: "#00C2A8",
+  },
+  {
+    quote:
+      "Our dealership used to miss 40+ service booking calls a week. Since deploying Xyras, every call is answered instantly and the booking confirms directly in our DMS. Revenue impact is real.",
+    author: "Rahul Sharma",
+    role: "Operations Director, AutoNation India",
+    industry: "Automotive",
+    icon: "directions_car",
+    accentColor: "#A55EEA",
+  },
+  {
+    quote:
+      "We handle 300+ reservation calls on weekends. Xyras handles them all simultaneously with perfect table-allocation logic. Our hosts now focus on hospitality, not the phone.",
+    author: "Chef Priya Venkatesh",
+    role: "Founder, The Spice Route Group",
+    industry: "Restaurants",
+    icon: "restaurant",
+    accentColor: "#FF9F43",
+  },
+];
+
+function StarRating({ count = 5 }: { count?: number }) {
+  return (
+    <div className="flex items-center gap-0.5" aria-label={`${count} out of 5 stars`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <span
+          key={i}
+          className="material-symbols-outlined text-[14px] text-yellow-400"
+          style={{ fontVariationSettings: '"FILL" 1' }}
+        >
+          star
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function TestimonialQuote() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.3 });
+  const [active, setActive] = useState(0);
+
+  // Auto-cycle testimonials every 6s
+  useEffect(() => {
+    const id = setInterval(() => setActive((prev) => (prev + 1) % TESTIMONIALS.length), 6000);
+    return () => clearInterval(id);
+  }, []);
+
+  const current = TESTIMONIALS[active];
 
   return (
     <section
       ref={sectionRef}
       className="relative overflow-hidden select-none"
-      id="testimonial-quote"
+      id="testimonials"
     >
-      {/* Background gradient (deep dark green → black) */}
+      {/* Background gradient */}
       <div
         className="absolute inset-0"
         style={{
-          background:
-            "linear-gradient(160deg, #0a1f1a 0%, #0B1215 35%, #080C0F 70%, #050708 100%)",
+          background: "linear-gradient(160deg, #0a1f1a 0%, #0B1215 35%, #080C0F 70%, #050708 100%)",
         }}
       />
 
@@ -30,99 +84,92 @@ export default function TestimonialQuote() {
         }}
       />
 
-      {/* Ambient glow spots */}
-      <div
-        className="absolute top-0 left-1/4 w-[500px] h-[300px] rounded-full opacity-[0.06] blur-[100px]"
-        style={{ background: "#00C2A8" }}
+      {/* Ambient glow — adapts to active testimonial color */}
+      <motion.div
+        key={active}
+        animate={{ opacity: [0, 0.07, 0.07] }}
+        transition={{ duration: 0.8 }}
+        className="absolute top-0 left-1/4 w-[600px] h-[400px] rounded-full blur-[120px] pointer-events-none"
+        style={{ background: current.accentColor }}
       />
       <div
         className="absolute bottom-0 right-1/4 w-[400px] h-[250px] rounded-full opacity-[0.03] blur-[80px]"
         style={{ background: "#5B8DEF" }}
       />
 
-      <div className="relative section-px py-24 sm:py-32 lg:py-40 max-w-5xl mx-auto">
-        {/* Opening quotation marks */}
+      <div className="relative section-px py-20 sm:py-32 lg:py-40 max-w-5xl mx-auto">
+        {/* Section label */}
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="absolute top-12 sm:top-16 lg:top-20 left-6 sm:left-10 lg:left-0"
+          initial={{ opacity: 0, y: 12 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="flex items-center justify-center gap-2 mb-12"
         >
-          <span
-            className="font-headline font-extrabold leading-none text-white/[0.08]"
-            style={{ fontSize: "clamp(5rem, 12vw, 10rem)" }}
-          >
-            &ldquo;
+          <div className="w-8 h-px bg-white/20" />
+          <span className="font-mono text-[10px] font-bold text-white/40 uppercase tracking-widest">
+            Customer Stories
           </span>
+          <div className="w-8 h-px bg-white/20" />
         </motion.div>
 
-        {/* Closing quotation marks */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={{
-            duration: 0.7,
-            delay: 0.2,
-            ease: [0.25, 0.46, 0.45, 0.94],
-          }}
-          className="absolute bottom-12 sm:bottom-16 lg:bottom-20 right-6 sm:right-10 lg:right-0"
-        >
-          <span
-            className="font-headline font-extrabold leading-none text-white/[0.08]"
-            style={{ fontSize: "clamp(5rem, 12vw, 10rem)" }}
-          >
-            &rdquo;
-          </span>
-        </motion.div>
+        {/* Testimonial carousel */}
+        <div className="relative min-h-[280px] flex flex-col items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col items-center text-center gap-8 px-4 sm:px-8 lg:px-16"
+            >
+              <StarRating />
 
-        {/* Quote content */}
-        <div className="relative z-10 text-center space-y-8 sm:space-y-10 px-4 sm:px-8 lg:px-16">
-          <motion.blockquote
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{
-              duration: 0.8,
-              delay: 0.15,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
-          >
-            <p className="font-headline font-extrabold text-white text-[1.4rem] sm:text-[2rem] lg:text-[2.6rem] leading-[1.25] tracking-tight">
-              &ldquo;We&apos;re not just building a call center —{" "}
-              <br className="hidden lg:inline" />
-              we&apos;re rethinking what business communication{" "}
-              <br className="hidden lg:inline" />
-              looks like in a voice-first,{" "}
-              <span className="text-brand-gradient">AI-native world</span>
-              ..&rdquo;
-            </p>
-          </motion.blockquote>
+              <blockquote>
+                <p className="font-headline font-extrabold text-white text-[1.3rem] sm:text-[1.9rem] lg:text-[2.3rem] leading-[1.3] tracking-tight">
+                  &ldquo;{current.quote}&rdquo;
+                </p>
+              </blockquote>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{
-              duration: 0.6,
-              delay: 0.4,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
-            className="flex flex-col items-center gap-3"
-          >
-            {/* Thin divider */}
-            <div className="w-12 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-12 h-px bg-white/15" />
+                <div className="flex items-center gap-3 mt-1">
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${current.accentColor}20`, border: `1px solid ${current.accentColor}40` }}
+                  >
+                    <span
+                      className="material-symbols-outlined text-[16px]"
+                      style={{ color: current.accentColor, fontVariationSettings: '"FILL" 1' }}
+                    >
+                      {current.icon}
+                    </span>
+                  </div>
+                  <div className="text-left">
+                    <p className="font-mono text-[12px] font-bold text-white/80">{current.author}</p>
+                    <p className="font-mono text-[10px] text-white/40 uppercase tracking-wider">{current.role}</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-            <p className="font-mono text-[12px] sm:text-[13px] text-white/50 tracking-wider uppercase font-bold">
-              Xyras Team
-            </p>
-
-            {/* Decorative monogram */}
-            <div className="flex items-center gap-2 mt-1">
-              <div className="w-6 h-px bg-white/10" />
-              <span className="font-headline text-[11px] text-white/20 tracking-widest">
-                XYRAS
-              </span>
-              <div className="w-6 h-px bg-white/10" />
-            </div>
-          </motion.div>
+        {/* Navigation dots with spring hover */}
+        <div className="flex items-center justify-center gap-3 mt-10">
+          {TESTIMONIALS.map((_, i) => (
+            <motion.button
+              key={i}
+              onClick={() => setActive(i)}
+              aria-label={`Show testimonial ${i + 1}`}
+              whileHover={{ scale: 1.4 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className={`rounded-full transition-all duration-300 cursor-pointer ${
+                i === active ? "w-6 h-2 bg-white/70" : "w-2 h-2 bg-white/25 hover:bg-white/45"
+              }`}
+            />
+          ))}
         </div>
       </div>
     </section>

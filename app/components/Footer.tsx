@@ -122,11 +122,14 @@ export default function Footer() {
               <ul className="flex flex-col gap-3">
                 {links.map((link) => (
                   <li key={link}>
-                    <Link 
-                      href={getLinkHref(link)} 
-                      className="text-[13px] text-[#64748B] hover:text-secondary transition-colors"
+                    <Link
+                      href={getLinkHref(link)}
+                      className="text-[13px] text-[#64748B] hover:text-secondary transition-colors duration-200 link-underline group inline-flex items-center gap-1"
                     >
-                      {link}
+                      <span>{link}</span>
+                      <span className="material-symbols-outlined text-[11px] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200">
+                        arrow_forward
+                      </span>
                     </Link>
                   </li>
                 ))}
@@ -138,6 +141,32 @@ export default function Footer() {
 
         {/* Mid-line separator */}
         <div className="h-px bg-[#0E1726]/10 mb-8" />
+
+        {/* Newsletter strip */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-8 p-5 rounded-2xl bg-[#0E1726]/3 border border-[#0E1726]/8">
+          <div>
+            <p className="font-bold text-[13.5px] text-[#0E1726]">Stay ahead in AI voice</p>
+            <p className="text-[12px] text-[#64748B] mt-0.5">Product updates, case studies, and launch news. No spam.</p>
+          </div>
+          <form
+            onSubmit={(e) => { e.preventDefault(); }}
+            className="flex items-center gap-2 w-full sm:w-auto"
+          >
+            <input
+              type="email"
+              placeholder="your@email.com"
+              required
+              aria-label="Email for newsletter"
+              className="flex-1 sm:w-56 bg-white border border-[#0E1726]/8 rounded-xl px-4 py-2.5 text-[13px] text-primary focus:border-secondary focus:outline-none transition-colors placeholder:text-[#64748B]/50"
+            />
+            <button
+              type="submit"
+              className="bg-secondary text-primary font-bold text-[11px] uppercase tracking-wider px-4 py-2.5 rounded-xl hover:bg-secondary/90 transition-all whitespace-nowrap"
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
 
         {/* Bottom copyright */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

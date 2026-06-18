@@ -15,6 +15,7 @@ const SHOWCASES = [
     bgGradient: "linear-gradient(135deg, #FFFFFF 0%, #F0FDFA 100%)",
     glow: "rgba(0, 194, 168, 0.15)",
     href: "/healthcare",
+    image: "/images/premium_doctor_ehr.png",
   },
   {
     idx: "02",
@@ -26,6 +27,7 @@ const SHOWCASES = [
     bgGradient: "linear-gradient(135deg, #FFFFFF 0%, #EEF2FF 100%)",
     glow: "rgba(91, 141, 239, 0.15)",
     href: "/real-estate",
+    image: "/images/premium_real_estate.png",
   },
   {
     idx: "03",
@@ -37,6 +39,7 @@ const SHOWCASES = [
     bgGradient: "linear-gradient(135deg, #FFFFFF 0%, #FFF7ED 100%)",
     glow: "rgba(255, 159, 67, 0.15)",
     href: "/restaurants",
+    image: "/images/premium_restaurant.png",
   },
   {
     idx: "04",
@@ -48,6 +51,7 @@ const SHOWCASES = [
     bgGradient: "linear-gradient(135deg, #FFFFFF 0%, #FAF5FF 100%)",
     glow: "rgba(165, 94, 234, 0.15)",
     href: "/automotive",
+    image: "/images/premium_automotive.png",
   },
 ];
 
@@ -104,11 +108,26 @@ export default function IndustryShowcase() {
                   boxShadow: `0 24px 60px ${item.glow}, 0 1px 3px rgba(14,23,38,0.02)`
                 }}
                 className="group relative rounded-[32px] border border-[#0E1726]/5 p-8 flex flex-col justify-between transition-all duration-350 cursor-pointer overflow-hidden text-left h-full"
+                data-cursor="card"
+                data-cursor-label="Explore"
                 style={{
                   background: item.bgGradient,
                   boxShadow: "0 12px 36px rgba(14,23,38,0.02), 0 1px 2px rgba(14,23,38,0.01)"
                 }}
               >
+                {/* Background image with overlay */}
+                {item.image && (
+                  <>
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-[0.07] transition-opacity duration-500 select-none pointer-events-none"
+                      loading="lazy"
+                      aria-hidden="true"
+                    />
+                  </>
+                )}
+
                 {/* Top accent sweeping line on hover */}
                 <div 
                   className="absolute inset-x-0 top-0 h-[3px] rounded-t-[32px] scale-x-0 group-hover:scale-x-100 transition-transform duration-350 origin-left"

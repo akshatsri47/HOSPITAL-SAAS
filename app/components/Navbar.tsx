@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import MagneticButton from "./MagneticButton";
 
 const CAPABILITIES = [
   { label: "Voice Agents", desc: "Low-latency human-like voice agents", icon: "record_voice_over" },
@@ -27,6 +29,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [spinLogo, setSpinLogo] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setSpinLogo(true);
@@ -173,33 +176,44 @@ export default function Navbar() {
 
           <Link 
             href="/pricing"
-            className="relative px-3 py-2 text-[12.5px] font-mono uppercase tracking-wider text-[#334155] hover:text-[#0E1726] font-semibold transition-colors duration-200 group"
+            className={`relative px-3 py-2 text-[12.5px] font-mono uppercase tracking-wider font-semibold transition-colors duration-200 group ${
+              pathname === "/pricing" ? "text-[#0E1726]" : "text-[#334155] hover:text-[#0E1726]"
+            }`}
           >
             Pricing
-            <span className="absolute bottom-1.5 left-3 right-3 h-[1.5px] rounded-full bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+            <span className={`absolute bottom-1.5 left-3 right-3 h-[1.5px] rounded-full bg-secondary transition-transform duration-300 origin-left ${
+              pathname === "/pricing" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+            }`} />
           </Link>
 
           <Link 
             href="/manifesto"
-            className="relative px-3 py-2 text-[12.5px] font-mono uppercase tracking-wider text-[#334155] hover:text-[#0E1726] font-semibold transition-colors duration-200 group"
+            className={`relative px-3 py-2 text-[12.5px] font-mono uppercase tracking-wider font-semibold transition-colors duration-200 group ${
+              pathname === "/manifesto" ? "text-[#0E1726]" : "text-[#334155] hover:text-[#0E1726]"
+            }`}
           >
             Manifesto
-            <span className="absolute bottom-1.5 left-3 right-3 h-[1.5px] rounded-full bg-[#0088FF] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+            <span className={`absolute bottom-1.5 left-3 right-3 h-[1.5px] rounded-full bg-[#0088FF] transition-transform duration-300 origin-left ${
+              pathname === "/manifesto" ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+            }`} />
           </Link>
         </nav>
 
         {/* Desktop CTA right */}
         <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
-          <Link 
-            href="/pricing"
-            className="relative overflow-hidden inline-flex items-center justify-center font-bold text-[13px] uppercase tracking-wide px-5 py-2.5 rounded-full border border-secondary text-primary hover:text-primary transition-all duration-300"
-          >
-            <span className="absolute inset-0 bg-secondary/8 hover:bg-secondary/15 transition-colors" />
-            <span className="relative z-10 flex items-center gap-1">
-              Book Demo
-              <span className="material-symbols-outlined text-[15px]">bolt</span>
-            </span>
-          </Link>
+          <MagneticButton strength={0.3}>
+            <Link
+              href="/pricing"
+              data-cursor="cta"
+              className="hover-shine cta-magnetic relative overflow-hidden inline-flex items-center justify-center font-bold text-[13px] uppercase tracking-wide px-5 py-2.5 rounded-full border border-secondary text-primary transition-all duration-300"
+              style={{ background: "rgba(0,194,168,0.08)" }}
+            >
+              <span className="relative z-10 flex items-center gap-1">
+                Book Demo
+                <span className="material-symbols-outlined text-[15px]">bolt</span>
+              </span>
+            </Link>
+          </MagneticButton>
         </div>
 
         {/* Mobile menu trigger */}

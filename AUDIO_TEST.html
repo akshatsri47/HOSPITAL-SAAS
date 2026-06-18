@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Demo Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #0e1726;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #00c2a8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #00a890;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        code {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h1>🎵 Audio Demo Test Page</h1>
+        <p class="subtitle">Test the speech synthesis functionality for the ConversationDemo component</p>
+        
+        <h2>Test 1: Browser Support</h2>
+        <button onclick="checkSupport()">Check Browser Support</button>
+        <div id="supportStatus" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Speech Synthesis Demo</h2>
+        <p>This simulates the healthcare conversation demo:</p>
+        <button onclick="playHealthcareDemo()" id="playBtn">Play Healthcare Demo</button>
+        <button onclick="stopDemo()">Stop</button>
+        <button onclick="toggleMute()" id="muteBtn">🔊 Unmute</button>
+        <div id="demoStatus" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Voice Selection</h2>
+        <button onclick="listVoices()">List Available Voices</button>
+        <div id="voiceList" class="status" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Audio File Loading</h2>
+        <p>Test if audio files can be loaded (requires files in <code>/public/audio/</code>):</p>
+        <button onclick="testAudioFile('healthcare')">Test Healthcare Audio</button>
+        <button onclick="testAudioFile('realestate')">Test Real Estate Audio</button>
+        <button onclick="testAudioFile('restaurant')">Test Restaurant Audio</button>
+        <button onclick="testAudioFile('automotive')">Test Automotive Audio</button>
+        <div id="audioStatus" class="status" style="display:none;"></div>
+    </div>
+
+    <script>
+        let isMuted = false;
+        let currentUtterances = [];
+
+        // Test 1: Check Browser Support
+        function checkSupport() {
+            const statusDiv = document.getElementById('supportStatus');
+            statusDiv.style.display = 'block';
+            
+            let html = '<h3>Browser Capabilities:</h3>';
+            
+            // Speech Synthesis
+            if ('speechSynthesis' in window) {
+                html += '<div class="success">✅ Speech Synthesis API: <strong>Supported</strong></div>';
+                html += `<div>Voices available: ${window.speechSynthesis.getVoices().length}</div>`;
+            } else {
+                html += '<div class="error">❌ Speech Synthesis API: <strong>Not Supported</strong></div>';
+            }
+            
+            // Audio Element
+            const audio = document.createElement('audio');
+            if (audio.canPlayType) {
+                html += '<div class="success">✅ Audio Element: <strong>Supported</strong></div>';
+                html += `<div>MP3 support: ${audio.canPlayType('audio/mpeg')}</div>`;
+                html += `<div>OGG support: ${audio.canPlayType('audio/ogg')}</div>`;
+            } else {
+                html += '<div class="error">❌ Audio Element: <strong>Not Supported</strong></div>';
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+
+        // Test 2: Play Demo
+        function playHealthcareDemo() {
+            if (!window.speechSynthesis) {
+                alert('Speech Synthesis not supported in this browser');
+                return;
+            }
+
+            stopDemo(); // Stop any playing speech
+            
+            const statusDiv = document.getElementById('demoStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status';
+            
+            const dialogue = {
+                caller: "Can I book an appointment with Dr. Mehta for tomorrow evening?",
+                ai: "Of course. Dr. Mehta has slots at 5:30 PM and 6:15 PM. Which one works best?"
+            };
+
+            // Caller speaks
+            statusDiv.innerHTML = '🟢 <strong>Step 1:</strong> Caller speaking...';
+            
+            if (!isMuted) {
+                const voices = window.speechSynthesis.getVoices();
+                const callerVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+                
+                const callerUtterance = new SpeechSynthesisUtterance(dialogue.caller);
+                callerUtterance.voice = callerVoice;
+                callerUtterance.rate = 0.95;
+                callerUtterance.pitch = 1.0;
+                callerUtterance.volume = 0.8;
+
+                callerUtterance.onend = () => {
+                    // Processing
+                    statusDiv.innerHTML = '🟡 <strong>Step 2:</strong> AI processing...';
+                    
+                    setTimeout(() => {
+                        // AI responds
+                        statusDiv.innerHTML = '🟢 <strong>Step 3:</strong> AI responding...';
+                        
+                        const aiVoice = voices.find(v => v.name.includes('Google')) || voices[1] || voices[0];
+                        const aiUtterance = new SpeechSynthesisUtterance(dialogue.ai);
+                        aiUtterance.voice = aiVoice;
+                        aiUtterance.rate = 0.9;
+                        aiUtterance.pitch = 1.05;
+                        aiUtterance.volume = 0.9;
+
+                        aiUtterance.onend = () => {
+                            setTimeout(() => {
+                                statusDiv.innerHTML = '✅ <strong>Complete:</strong> Appointment scheduled!';
+                                statusDiv.className = 'status success';
+                            }, 800);
+                        };
+
+                        currentUtterances.push(aiUtterance);
+                        window.speechSynthesis.speak(aiUtterance);
+                    }, 1500);
+                };
+
+                currentUtterances.push(callerUtterance);
+                window.speechSynthesis.speak(callerUtterance);
+            } else {
+                statusDiv.innerHTML = '🔇 <strong>Muted:</strong> Visual demo only (audio is muted)';
+                statusDiv.className = 'status warning';
+            }
+        }
+
+        function stopDemo() {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+            currentUtterances = [];
+            const statusDiv = document.getElementById('demoStatus');
+            if (statusDiv.style.display !== 'none') {
+                statusDiv.innerHTML = '⏹️ <strong>Stopped</strong>';
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('muteBtn');
+            btn.textContent = isMuted ? '🔇 Muted' : '🔊 Unmute';
+        }
+
+        // Test 3: List Voices
+        function listVoices() {
+            const voiceList = document.getElementById('voiceList');
+            voiceList.style.display = 'block';
+            
+            if (!window.speechSynthesis) {
+                voiceList.innerHTML = '<div class="error">Speech Synthesis not supported</div>';
+                return;
+            }
+
+            const voices = window.speechSynthesis.getVoices();
+            
+            if (voices.length === 0) {
+                voiceList.innerHTML = '<div class="warning">No voices loaded yet. Try again in a moment.</div>';
+                // Try again after a delay
+                setTimeout(() => {
+                    const newVoices = window.speechSynthesis.getVoices();
+                    if (newVoices.length > 0) {
+                        displayVoices(newVoices);
+                    }
+                }, 1000);
+                return;
+            }
+            
+            displayVoices(voices);
+        }
+
+        function displayVoices(voices) {
+            const voiceList = document.getElementById('voiceList');
+            let html = `<h3>Available Voices (${voices.length}):</h3>`;
+            html += '<div style="max-height: 300px; overflow-y: auto;">';
+            
+            voices.forEach((voice, idx) => {
+                const isEnglish = voice.lang.startsWith('en');
+                html += `<div style="padding: 8px; border-bottom: 1px solid #e2e8f0; ${isEnglish ? 'background: #f0fdf4;' : ''}">
+                    <strong>${idx + 1}. ${voice.name}</strong><br>
+                    Language: ${voice.lang} | 
+                    ${voice.localService ? 'Local' : 'Remote'} | 
+                    ${voice.default ? '⭐ Default' : ''}
+                </div>`;
+            });
+            
+            html += '</div>';
+            voiceList.innerHTML = html;
+        }
+
+        // Test 4: Audio File Loading
+        function testAudioFile(industry) {
+            const statusDiv = document.getElementById('audioStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status';
+            statusDiv.innerHTML = `⏳ Testing ${industry} audio file...`;
+
+            const audioPath = `/audio/${industry}-demo.mp3`;
+            const audio = new Audio();
+            audio.src = audioPath;
+
+            const handleSuccess = () => {
+                statusDiv.innerHTML = `✅ <strong>${industry} audio:</strong> File loaded successfully!<br>
+                    Path: <code>${audioPath}</code><br>
+                    Duration: ${audio.duration.toFixed(2)}s`;
+                statusDiv.className = 'status success';
+                audio.removeEventListener('canplaythrough', handleSuccess);
+                audio.removeEventListener('error', handleError);
+            };
+
+            const handleError = (e) => {
+                statusDiv.innerHTML = `❌ <strong>${industry} audio:</strong> File not found or failed to load<br>
+                    Path: <code>${audioPath}</code><br>
+                    Error: ${e.type}<br>
+                    <em>Will fall back to Speech Synthesis in production</em>`;
+                statusDiv.className = 'status error';
+                audio.removeEventListener('canplaythrough', handleSuccess);
+                audio.removeEventListener('error', handleError);
+            };
+
+            audio.addEventListener('canplaythrough', handleSuccess);
+            audio.addEventListener('error', handleError);
+
+            // Timeout after 3 seconds
+            setTimeout(() => {
+                if (statusDiv.innerHTML.includes('Testing')) {
+                    statusDiv.innerHTML = `⚠️ <strong>${industry} audio:</strong> Load timeout<br>
+                        Path: <code>${audioPath}</code><br>
+                        <em>File may not exist or takes too long to load</em>`;
+                    statusDiv.className = 'status warning';
+                }
+            }, 3000);
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            // Preload voices
+            if (window.speechSynthesis) {
+                window.speechSynthesis.getVoices();
+                // Some browsers need this event
+                window.speechSynthesis.onvoiceschanged = () => {
+                    console.log('Voices loaded:', window.speechSynthesis.getVoices().length);
+                };
+            }
+        });
+    </script>
+</body>
+</html>

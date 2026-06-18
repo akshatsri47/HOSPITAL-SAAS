@@ -2,8 +2,8 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import InteractiveCard from "./InteractiveCard";
 
-/* ── Workflow card data (Generic Business & SaaS Use Cases) ── */
 const WORKFLOWS = [
   {
     title: "Lead Qualification",
@@ -47,6 +47,62 @@ const WORKFLOWS = [
   },
 ];
 
+type WorkflowCard = typeof WORKFLOWS[0];
+
+function WorkflowCardItem({ card, idx, isInView }: { card: WorkflowCard; idx: number; isInView: boolean }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="group flex-shrink-0 w-[260px] sm:w-[280px] snap-center"
+    >
+      <InteractiveCard
+        className="rounded-2xl overflow-hidden"
+        accentColor={card.accent}
+        glareColor="rgba(255,255,255,0.14)"
+        maxTilt={7}
+      >
+        {/* Card image */}
+        <div
+          className="relative rounded-2xl overflow-hidden h-[220px] sm:h-[260px] mb-4 shadow-card group-hover:shadow-card-hover transition-all duration-500 bg-[#0E1726]"
+        >
+          <img
+            src={card.image}
+            alt={card.title}
+            className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0E1726]/20 via-[#0E1726]/50 to-[#0E1726]/85" />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "20px 20px" }}
+          />
+          <div className="absolute top-0 inset-x-0 h-1.5 opacity-80" style={{ backgroundColor: card.accent }} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="material-symbols-outlined" style={{ fontSize: "56px", color: card.accent, opacity: 0.9 }}>
+              {card.icon}
+            </span>
+          </div>
+          <div className="absolute bottom-4 left-4">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 group-hover:scale-110"
+              style={{ backgroundColor: card.accent, borderColor: `${card.accent}50` }}
+            >
+              <span className="material-symbols-outlined text-white text-[16px]">arrow_forward</span>
+            </div>
+          </div>
+        </div>
+        {/* Card text */}
+        <div className="px-1 pb-1">
+          <h3 className="font-headline font-bold text-[#0E1726] text-[17px] sm:text-[18px] mb-1.5">{card.title}</h3>
+          <p className="text-[#64748B] text-[13px] sm:text-[13.5px] leading-relaxed">{card.description}</p>
+        </div>
+      </InteractiveCard>
+    </motion.div>
+  );
+}
+
 export default function WorkflowShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
@@ -58,7 +114,6 @@ export default function WorkflowShowcase() {
       id="workflows"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -74,104 +129,20 @@ export default function WorkflowShowcase() {
             Every Team
           </h2>
           <p className="text-[#64748B] text-[15px] sm:text-[16px] max-w-[48ch] mx-auto leading-relaxed">
-            From hyper-growth startups to global enterprise service teams, Xyras
-            adapts to your operational needs and scales with your ambitions.
+            From hyper-growth startups to global enterprise service teams, Xyras adapts to your operational needs
+            and scales with your ambitions.
           </p>
         </motion.div>
 
-        {/* Horizontal scrolling cards */}
         <div className="relative">
-          {/* Fade edges */}
           <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
-
-          <div className="flex gap-5 sm:gap-6 overflow-x-auto pb-6 px-2 scrollbar-hide snap-x snap-mandatory"
-               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          <div
+            className="flex gap-5 sm:gap-6 overflow-x-auto pb-6 px-2 scrollbar-hide snap-x snap-mandatory"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {WORKFLOWS.map((card, idx) => (
-              <motion.div
-                key={card.title}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{
-                  duration: 0.5,
-                  delay: idx * 0.1,
-                  ease: [0.25, 0.46, 0.45, 0.94],
-                }}
-                className="group flex-shrink-0 w-[260px] sm:w-[280px] snap-center"
-              >
-                {/* Card image wrapper */}
-                <div
-                  className="relative rounded-2xl overflow-hidden h-[220px] sm:h-[260px] mb-4 shadow-card group-hover:shadow-card-hover transition-all duration-500 bg-[#0E1726]"
-                >
-                  {/* Stock Background Image */}
-                  <img
-                    src={card.image}
-                    alt={card.title}
-                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out"
-                    loading="lazy"
-                  />
-
-                  {/* Elegant navy overlay to maintain text/icon contrast */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#0E1726]/20 via-[#0E1726]/50 to-[#0E1726]/85" />
-
-                  {/* Decorative grid pattern */}
-                  <div
-                    className="absolute inset-0 opacity-[0.03]"
-                    style={{
-                      backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`,
-                      backgroundSize: "20px 20px",
-                    }}
-                  />
-
-                  {/* Accent Colored Line Indicator */}
-                  <div 
-                    className="absolute top-0 inset-x-0 h-1.5 transition-opacity opacity-80"
-                    style={{ backgroundColor: card.accent }}
-                  />
-
-                  {/* Large icon */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.span
-                      className="material-symbols-outlined"
-                      style={{
-                        fontSize: "56px",
-                        color: card.accent,
-                        opacity: 0.9,
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {card.icon}
-                    </motion.span>
-                  </div>
-
-                  {/* Arrow button */}
-                  <div className="absolute bottom-4 left-4">
-                    <div
-                      className="w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 group-hover:scale-110"
-                      style={{
-                        backgroundColor: card.accent,
-                        borderColor: `${card.accent}50`,
-                      }}
-                    >
-                      <span className="material-symbols-outlined text-white text-[16px]">
-                        arrow_forward
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card text content */}
-                <div className="px-1">
-                  <h3 className="font-headline font-bold text-[#0E1726] text-[17px] sm:text-[18px] mb-1.5">
-                    {card.title}
-                  </h3>
-                  <p className="text-[#64748B] text-[13px] sm:text-[13.5px] leading-relaxed">
-                    {card.description}
-                  </p>
-                </div>
-              </motion.div>
+              <WorkflowCardItem key={card.title} card={card} idx={idx} isInView={isInView} />
             ))}
           </div>
         </div>
