@@ -1,151 +1,431 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
-import InteractiveCard from "./InteractiveCard";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion, useInView } from "framer-motion";
 
-const WORKFLOWS = [
-  {
-    title: "Lead Qualification",
-    description:
-      "Pre-screen inbound prospects, score leads, and book product demonstrations directly into calendars 24×7.",
-    icon: "leaderboard",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
-    accent: "#00C2A8",
-  },
-  {
-    title: "Customer Support",
-    description:
-      "Resolve frequent customer service tickets, answer standard account FAQs, and trigger live status checks instantly.",
-    icon: "headset_mic",
-    image: "https://images.unsplash.com/photo-1549923746-c502d488b3ea?auto=format&fit=crop&w=600&q=80",
-    accent: "#5B8DEF",
-  },
-  {
-    title: "Smart Scheduling",
-    description:
-      "Book consulting consultations, schedule client appointments, and coordinate complex multi-person availability.",
-    icon: "calendar_month",
-    image: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=600&q=80",
-    accent: "#A78BFA",
-  },
-  {
-    title: "Logistics & Ops",
-    description:
-      "Update real-time delivery statuses, trace package courier locations, and automatically adjust warehousing logs.",
-    icon: "local_shipping",
-    image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80",
-    accent: "#FBBF24",
-  },
-  {
-    title: "E-Commerce Checkout",
-    description:
-      "Authorize secure transaction states, verify coupon eligibility, and process seamless refund pipelines on the spot.",
-    icon: "shopping_bag",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80",
-    accent: "#EF4444",
-  },
-];
+type Mode = "inbound" | "outbound";
 
-type WorkflowCard = typeof WORKFLOWS[0];
+type UseCase = {
+  title: string;
+  description: string;
+  agent: string;
+  role: string;
+  portraitPosition: string;
+  accent: string;
+  icon: string;
+  language: string;
+  action: string;
+};
 
-function WorkflowCardItem({ card, idx, isInView }: { card: WorkflowCard; idx: number; isInView: boolean }) {
+const USE_CASES: Record<Mode, UseCase[]> = {
+  inbound: [
+    {
+      title: "General Inquiry & FAQ",
+      description:
+        "Answers routine questions, shares business information, and guides callers to the right next step.",
+      agent: "Meera",
+      role: "Customer Support",
+      portraitPosition: "33.333% 50%",
+      accent: "#5EEAD4",
+      icon: "forum",
+      language: "English · IN",
+      action: "FAQ Answered",
+    },
+    {
+      title: "Appointment Booking",
+      description:
+        "Checks availability, schedules appointments, and handles rescheduling without keeping callers waiting.",
+      agent: "Priya",
+      role: "Booking Assistant",
+      portraitPosition: "0% 50%",
+      accent: "#8EAFFF",
+      icon: "calendar_month",
+      language: "Hindi · IN",
+      action: "Appointment Booked",
+    },
+    {
+      title: "Order Status & Support",
+      description:
+        "Retrieves order details, explains delivery updates, and resolves common service questions.",
+      agent: "Rohan",
+      role: "Support Agent",
+      portraitPosition: "66.666% 50%",
+      accent: "#B8A5FF",
+      icon: "package_2",
+      language: "English · IN",
+      action: "Support Resolved",
+    },
+  ],
+  outbound: [
+    {
+      title: "Lead Qualification",
+      description:
+        "Calls new leads, asks qualifying questions, and routes interested prospects directly to your team.",
+      agent: "Kavya",
+      role: "Sales Assistant",
+      portraitPosition: "100% 50%",
+      accent: "#5EEAD4",
+      icon: "trending_up",
+      language: "English · IN",
+      action: "Lead Qualified",
+    },
+    {
+      title: "Payment Reminder",
+      description:
+        "Sends polite reminder calls, confirms payment intent, and updates the follow-up status automatically.",
+      agent: "Meera",
+      role: "Reminder Agent",
+      portraitPosition: "33.333% 50%",
+      accent: "#8EAFFF",
+      icon: "notifications_active",
+      language: "Hindi · IN",
+      action: "Reminder Sent",
+    },
+    {
+      title: "Appointment Reminder",
+      description:
+        "Reminds customers before scheduled appointments and confirms attendance without manual follow-up.",
+      agent: "Priya",
+      role: "Scheduling Agent",
+      portraitPosition: "0% 50%",
+      accent: "#B8A5FF",
+      icon: "event_available",
+      language: "English · IN",
+      action: "Visit Confirmed",
+    },
+  ],
+};
+
+const WAVE_BARS = [22, 38, 58, 76, 48, 68, 88, 56, 72, 42, 62, 30];
+
+function VoiceVisual({
+  item,
+  playing,
+  onPlay,
+}: {
+  item: UseCase;
+  playing: boolean;
+  onPlay: () => void;
+}) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="group flex-shrink-0 w-[260px] sm:w-[280px] snap-center"
-    >
-      <InteractiveCard
-        className="rounded-2xl overflow-hidden"
-        accentColor={card.accent}
-        glareColor="rgba(255,255,255,0.14)"
-        maxTilt={7}
-      >
-        {/* Card image */}
-        <div
-          className="relative rounded-2xl overflow-hidden h-[220px] sm:h-[260px] mb-4 shadow-card group-hover:shadow-card-hover transition-all duration-500 bg-[#0E1726]"
+    <div className="relative mt-6 h-[218px] overflow-hidden rounded-[24px] border border-white/[0.06] bg-[radial-gradient(circle_at_50%_44%,#17304B_0%,#091423_70%)]">
+      <div
+        className="absolute inset-0 opacity-70"
+        style={{
+          background: `radial-gradient(circle at 50% 42%, ${item.accent}25 0%, transparent 52%)`,
+        }}
+      />
+
+      {[0, 1, 2].map((ring) => (
+        <motion.div
+          key={ring}
+          animate={
+            playing
+              ? { scale: [0.9, 1.08, 0.9], opacity: [0.13, 0.34, 0.13] }
+              : { scale: 1, opacity: 0.14 }
+          }
+          transition={{
+            duration: 2.2,
+            repeat: playing ? Infinity : 0,
+            delay: ring * 0.2,
+            ease: "easeInOut",
+          }}
+          className="absolute left-1/2 top-[46%] rounded-[48%] border"
+          style={{
+            width: 176 + ring * 30,
+            height: 96 + ring * 24,
+            borderColor: item.accent,
+            marginLeft: -(176 + ring * 30) / 2,
+            marginTop: -(96 + ring * 24) / 2,
+            rotate: ring % 2 ? "-10deg" : "10deg",
+            boxShadow: `0 0 26px ${item.accent}20`,
+          }}
+        />
+      ))}
+
+      <div className="absolute left-4 top-4 z-20 flex items-center gap-2 rounded-full border border-white/[0.08] bg-[#07101F]/65 px-3 py-1.5 backdrop-blur-md">
+        <span className="relative flex h-2 w-2">
+          {playing && (
+            <span
+              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-70"
+              style={{ backgroundColor: item.accent }}
+            />
+          )}
+          <span
+            className="relative h-2 w-2 rounded-full"
+            style={{ backgroundColor: item.accent }}
+          />
+        </span>
+        <span
+          className="font-mono text-[8px] font-bold uppercase tracking-[0.16em]"
+          style={{ color: item.accent }}
         >
-          <img
-            src={card.image}
-            alt={card.title}
-            className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out"
-            loading="lazy"
+          {playing ? "Live demo" : "Ready"}
+        </span>
+      </div>
+
+      <motion.div
+        animate={playing ? { scale: [1, 1.025, 1] } : { scale: 1 }}
+        transition={{ duration: 1.8, repeat: playing ? Infinity : 0 }}
+        className="absolute left-1/2 top-[45%] z-10 h-[130px] w-[130px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[26px] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
+        style={{
+          backgroundImage: "url('/images/agent_portraits.png')",
+          backgroundSize: "400% 180%",
+          backgroundPosition: item.portraitPosition,
+          backgroundRepeat: "no-repeat",
+        }}
+        role="img"
+        aria-label={`${item.agent}, ${item.role}`}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-[#07101F]/28 via-transparent to-white/[0.04]" />
+      </motion.div>
+
+      <motion.button
+        type="button"
+        onClick={onPlay}
+        aria-label={playing ? `Pause ${item.title} demo` : `Play ${item.title} demo`}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.93 }}
+        className="absolute left-[calc(50%+38px)] top-[calc(45%+34px)] z-20 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl bg-white text-primary shadow-[0_14px_34px_rgba(0,0,0,0.34)]"
+      >
+        {playing && (
+          <span className="absolute inset-[-6px] animate-ping rounded-[20px] border border-[#00C2A8]/25" />
+        )}
+        <span className="material-symbols-outlined relative text-[21px]">
+          {playing ? "pause" : "play_arrow"}
+        </span>
+      </motion.button>
+
+      <div className="absolute inset-x-8 bottom-4 flex h-6 items-end justify-center gap-[4px] opacity-65">
+        {WAVE_BARS.map((height, index) => (
+          <motion.span
+            key={index}
+            animate={
+              playing
+                ? {
+                    height: [
+                      `${Math.max(14, height * 0.35)}%`,
+                      `${height}%`,
+                      `${Math.max(20, height * 0.5)}%`,
+                    ],
+                  }
+                : { height: `${Math.max(12, height * 0.22)}%` }
+            }
+            transition={{
+              duration: 0.65 + (index % 4) * 0.12,
+              repeat: playing ? Infinity : 0,
+              repeatType: "mirror",
+              ease: "easeInOut",
+              delay: index * 0.035,
+            }}
+            className="w-[3px] rounded-full"
+            style={{
+              backgroundColor: item.accent,
+              boxShadow: playing ? `0 0 9px ${item.accent}` : "none",
+            }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0E1726]/20 via-[#0E1726]/50 to-[#0E1726]/85" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function UseCaseCard({
+  item,
+  index,
+  visible,
+  playing,
+  onPlay,
+}: {
+  item: UseCase;
+  index: number;
+  visible: boolean;
+  playing: boolean;
+  onPlay: () => void;
+}) {
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 26 }}
+      animate={visible ? { opacity: 1, y: 0 } : {}}
+      transition={{
+        duration: 0.62,
+        delay: 0.12 + index * 0.08,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      whileHover={{ y: -7 }}
+      className={`group relative flex min-h-[535px] flex-col overflow-hidden rounded-[30px] border bg-[linear-gradient(155deg,#172740_0%,#101C30_100%)] p-6 transition-all duration-500 sm:p-7 ${
+        playing
+          ? "border-[#00C2A8]/45 shadow-[0_24px_70px_rgba(0,194,168,0.17)]"
+          : "border-[#203552] shadow-[0_18px_48px_rgba(14,23,38,0.11)] hover:border-[#00C2A8]/30 hover:shadow-[0_26px_65px_rgba(14,23,38,0.16)]"
+      }`}
+    >
+      <div
+        className="pointer-events-none absolute -right-24 -top-24 h-52 w-52 rounded-full opacity-10 blur-3xl transition-opacity duration-500 group-hover:opacity-20"
+        style={{ backgroundColor: item.accent }}
+      />
+
+      <div className="relative flex items-center justify-between">
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: `${item.accent}15`, color: item.accent }}
+        >
+          <span className="material-symbols-outlined text-[21px]">
+            {item.icon}
+          </span>
+        </div>
+        <span className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white/32">
+          Use case 0{index + 1}
+        </span>
+      </div>
+
+      <h3 className="relative mt-6 font-body text-[1.55rem] font-bold leading-tight tracking-[-0.04em] text-white sm:text-[1.68rem]">
+        {item.title}
+      </h3>
+      <p className="relative mt-3 min-h-[66px] text-[13.5px] leading-6 text-white/56">
+        {item.description}
+      </p>
+
+      <VoiceVisual item={item} playing={playing} onPlay={onPlay} />
+
+      <div className="mt-auto pt-5">
+        <div className="mb-4 flex flex-wrap gap-2 border-b border-white/[0.07] pb-4">
+          <span className="rounded-full bg-white/[0.06] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-white/50">
+            {item.language}
+          </span>
+          <span
+            className="rounded-full px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em]"
+            style={{
+              color: item.accent,
+              backgroundColor: `${item.accent}12`,
+            }}
+          >
+            {item.action}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
           <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "20px 20px" }}
-          />
-          <div className="absolute top-0 inset-x-0 h-1.5 opacity-80" style={{ backgroundColor: card.accent }} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="material-symbols-outlined" style={{ fontSize: "56px", color: card.accent, opacity: 0.9 }}>
-              {card.icon}
+            className="flex h-10 w-10 items-center justify-center rounded-full font-mono text-[11px] font-bold text-[#07131F]"
+            style={{ backgroundColor: item.accent }}
+          >
+            {item.agent.slice(0, 1)}
+          </div>
+          <div>
+            <p className="text-[13px] font-bold text-white">{item.agent}</p>
+            <p className="mt-0.5 text-[11px] text-white/42">{item.role}</p>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-white/25">
+              Online
             </span>
-          </div>
-          <div className="absolute bottom-4 left-4">
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-300 group-hover:scale-110"
-              style={{ backgroundColor: card.accent, borderColor: `${card.accent}50` }}
-            >
-              <span className="material-symbols-outlined text-white text-[16px]">arrow_forward</span>
-            </div>
+            <span
+              className="h-2.5 w-2.5 rounded-full"
+              style={{
+                backgroundColor: item.accent,
+                boxShadow: `0 0 13px ${item.accent}`,
+              }}
+            />
           </div>
         </div>
-        {/* Card text */}
-        <div className="px-1 pb-1">
-          <h3 className="font-headline font-bold text-[#0E1726] text-[17px] sm:text-[18px] mb-1.5">{card.title}</h3>
-          <p className="text-[#64748B] text-[13px] sm:text-[13.5px] leading-relaxed">{card.description}</p>
-        </div>
-      </InteractiveCard>
-    </motion.div>
+      </div>
+    </motion.article>
   );
 }
 
 export default function WorkflowShowcase() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.15 });
+  const sectionRef = useRef<HTMLElement>(null);
+  const visible = useInView(sectionRef, { once: true, amount: 0.12 });
+  const [mode, setMode] = useState<Mode>("inbound");
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
+
+  const changeMode = (nextMode: Mode) => {
+    setMode(nextMode);
+    setPlayingIndex(null);
+  };
 
   return (
     <section
       ref={sectionRef}
-      className="section-px py-20 sm:py-28 bg-white border-b border-[#0E1726]/5 overflow-hidden"
+      className="section-px relative overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FAFC_48%,#F1F7F7_100%)] py-24 sm:py-32"
       id="workflows"
     >
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-          className="text-center mb-14 sm:mb-18"
-        >
-          <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.2em] text-[#64748B] mb-4">
-            06 · Built for Every Workflow
-          </p>
-          <h2 className="font-headline font-extrabold text-[#0E1726] text-[2rem] sm:text-[3rem] lg:text-[3.6rem] leading-tight tracking-tight mb-4">
-            Built for Every Workflow,{" "}
-            <br className="hidden sm:inline" />
-            Every Team
-          </h2>
-          <p className="text-[#64748B] text-[15px] sm:text-[16px] max-w-[48ch] mx-auto leading-relaxed">
-            From hyper-growth startups to global enterprise service teams, Xyras adapts to your operational needs
-            and scales with your ambitions.
-          </p>
-        </motion.div>
+      <div className="pointer-events-none absolute left-[8%] top-20 h-72 w-72 rounded-full bg-[#00C2A8]/[0.07] blur-[100px]" />
+      <div className="pointer-events-none absolute bottom-10 right-[5%] h-80 w-80 rounded-full bg-[#5B8DEF]/[0.07] blur-[110px]" />
 
-        <div className="relative">
-          <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-20 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
-          <div
-            className="flex gap-5 sm:gap-6 overflow-x-auto pb-6 px-2 scrollbar-hide snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            {WORKFLOWS.map((card, idx) => (
-              <WorkflowCardItem key={card.title} card={card} idx={idx} isInView={isInView} />
-            ))}
+      <div className="relative mx-auto max-w-7xl">
+        <motion.div
+          animate={{ x: [0, 22, 0], y: [0, -14, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="pointer-events-none absolute right-[5%] top-[5%] h-24 w-24 rounded-full border border-[#00C2A8]/10"
+        />
+
+        <motion.header
+          initial={{ opacity: 0, y: 22 }}
+          animate={visible ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 mx-auto max-w-4xl text-center"
+        >
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-secondary">
+            AI call demos · Inbound & outbound
+          </p>
+          <h2 className="mt-5 font-body text-[2.35rem] font-bold leading-[1.04] tracking-[-0.055em] text-primary sm:text-[3.5rem] lg:text-[4.2rem]">
+            Listen to AI agents in action
+          </h2>
+          <p className="mx-auto mt-6 max-w-3xl text-[15px] leading-7 text-[#64748B] sm:text-[17px]">
+            Explore real call scenarios for appointments, support, lead
+            qualification, reminders, and more—across inbound and outbound
+            workflows.
+          </p>
+
+          <div className="relative mx-auto mt-9 flex w-fit rounded-[18px] border border-[#0E1726]/[0.07] bg-white p-1 shadow-[0_10px_30px_rgba(14,23,38,0.07)]">
+            {(["inbound", "outbound"] as Mode[]).map((option) => {
+              const active = mode === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => changeMode(option)}
+                  className={`relative z-10 min-w-[112px] rounded-[14px] px-5 py-3 text-[13px] font-bold capitalize transition-colors sm:min-w-[132px] sm:text-[14px] ${
+                    active ? "text-white" : "text-[#526078]"
+                  }`}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="workflow-mode"
+                      className="absolute inset-0 -z-10 rounded-[14px] bg-[#0E1726] shadow-sm"
+                      transition={{ type: "spring", stiffness: 360, damping: 30 }}
+                    />
+                  )}
+                  {option}
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </motion.header>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={mode}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="relative z-10 mt-12 grid gap-5 md:grid-cols-2 lg:mt-14 lg:grid-cols-3 lg:gap-6"
+          >
+            {USE_CASES[mode].map((item, index) => (
+              <UseCaseCard
+                key={`${mode}-${item.title}`}
+                item={item}
+                index={index}
+                visible={visible}
+                playing={playingIndex === index}
+                onPlay={() =>
+                  setPlayingIndex((current) => (current === index ? null : index))
+                }
+              />
+            ))}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </section>
   );

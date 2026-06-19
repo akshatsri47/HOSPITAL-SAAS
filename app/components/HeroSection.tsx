@@ -1,393 +1,777 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import MagneticButton from "./MagneticButton";
 
-const LANGUAGE_TAGS = [
-  "ENGLISH · GLOBAL",
-  "हिंदी · HINDI",
-  "தமிழ் · TAMIL",
-  "తెలుగు · TELUGU",
-  "ESPAÑOL · SPANISH",
-  "DEUTSCH · GERMAN",
-];
+// ── Types ────────────────────────────────────────────────────
+type CallState = "idle" | "ringing" | "ai-speaking" | "listening" | "processing" | "ended" | "mic-denied";
+interface Message { role: "user" | "aria"; text: string }
 
-const FLOATING_CHARS = [
-  { char: "A",  top: "15%", left: "5%",  size: "40px", speed: 1.2 },
-  { char: "क", top: "25%", left: "45%", size: "44px", speed: 1.5 },
-  { char: "த", top: "75%", left: "8%",  size: "38px", speed: 1.1 },
-  { char: "అ", top: "60%", left: "40%", size: "42px", speed: 1.4 },
-  { char: "Ω",  top: "80%", left: "48%", size: "34px", speed: 0.9 },
-];
+// ── Waveform ─────────────────────────────────────────────────
+function Waveform({ active }: { active: boolean }) {
+  return (
+    <div className="flex items-end justify-center gap-[3px] h-8">
+      {[0.5, 1.0, 0.7, 1.4, 0.6, 1.2, 0.4, 1.1, 0.8, 0.6, 1.3, 0.5].map((v, i) => (
+        <motion.div
+          key={i}
+          className="rounded-full"
+          animate={active
+            ? { height: [3, Math.max(5, 26 * v), 3], backgroundColor: "#00C2A8" }
+            : { height: 4, backgroundColor: "rgba(0,194,168,0.25)" }
+          }
+          transition={active
+            ? { duration: 0.85, repeat: Infinity, delay: i * 0.065, ease: "easeInOut" }
+            : { duration: 0.4 }
+          }
+          style={{ width: "3px", height: "4px" }}
+        />
+      ))}
+    </div>
+  );
+}
 
-const INDUSTRIES = [
-  { label: "Hospital",    icon: "local_hospital", color: "#00C2A8", outcome: "Appointment Booked" },
-  { label: "Real Estate", icon: "home",           color: "#5B8DEF", outcome: "Lead Qualified"     },
-  { label: "Restaurant",  icon: "restaurant",     color: "#FF9F43", outcome: "Table Reserved"     },
-  { label: "Automotive",  icon: "directions_car", color: "#4B7BEC", outcome: "Service Scheduled"  },
-  { label: "Education",   icon: "school",         color: "#A55EEA", outcome: "Support Resolved"   },
-];
+// ── Live clock status bar ─────────────────────────────────────
+function PhoneStatusBar() {
+  const [time, setTime] = useState("10:41");
+  useEffect(() => {
+    const tick = () => {
+      const d = new Date();
+      setTime(`${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`);
+    };
+    tick();
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="flex items-center justify-between px-6 pt-3.5 pb-1">
+      <span className="font-mono text-[11.5px] font-bold text-[#0E1726]">{time}</span>
+      <div className="flex items-center gap-1.5">
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none">
+          <rect x="0" y="7" width="3" height="4" rx="1" fill="#0E1726" opacity="0.8"/>
+          <rect x="4" y="4.5" width="3" height="6.5" rx="1" fill="#0E1726" opacity="0.8"/>
+          <rect x="8" y="2" width="3" height="9" rx="1" fill="#0E1726" opacity="0.8"/>
+          <rect x="12" y="0" width="3" height="11" rx="1" fill="#0E1726" opacity="0.25"/>
+        </svg>
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none">
+          <path d="M7.5 9.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" fill="#0E1726" opacity="0.8"/>
+          <path d="M4.5 6.8a4.2 4.2 0 0 1 6 0" stroke="#0E1726" strokeWidth="1.4" strokeLinecap="round" opacity="0.8"/>
+          <path d="M1.5 4a8 8 0 0 1 12 0" stroke="#0E1726" strokeWidth="1.4" strokeLinecap="round" opacity="0.4"/>
+        </svg>
+        <svg width="24" height="11" viewBox="0 0 24 11" fill="none">
+          <rect x="0.5" y="1" width="19" height="9" rx="2.5" stroke="#0E1726" strokeWidth="1.1" opacity="0.8"/>
+          <rect x="2" y="2.5" width="13" height="6" rx="1.5" fill="#0E1726" opacity="0.8"/>
+          <rect x="20" y="3.5" width="2.5" height="4" rx="1" fill="#0E1726" opacity="0.45"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
 
-/* ── Floating parallax character ────────────────────────────── */
-function FloatingCharacter({
-  char, top, left, size, speed, springX, springY,
-}: typeof FLOATING_CHARS[0] & { springX: ReturnType<typeof useSpring>; springY: ReturnType<typeof useSpring> }) {
-  const x = useTransform(springX, (v: number) => v * 25 * speed);
-  const y = useTransform(springY, (v: number) => v * 25 * speed);
+// ── Holographic chip ─────────────────────────────────────────
+function HoloChip({
+  icon, label, color, delay = 0, floatDir = 1
+}: { icon: string; label: string; color: string; delay?: number; floatDir?: number }) {
   return (
     <motion.div
-      className="absolute font-headline font-bold text-[#0E1726]/3 pointer-events-none select-none hidden lg:block"
-      style={{ top, left, fontSize: size, x, y }}
-      animate={{ y: [0, -8, 0] }}
-      transition={{ repeat: Infinity, duration: 6 + speed * 2, ease: "easeInOut" }}
+      initial={{ opacity: 0, scale: 0.85, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: [0, -5 * floatDir, 0] }}
+      transition={{
+        opacity: { duration: 0.5, delay },
+        scale:   { duration: 0.5, delay },
+        y:       { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: delay + 0.5 },
+      }}
+      className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl cursor-default"
+      style={{
+        background: "rgba(255,255,255,0.72)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        border: `1px solid ${color}35`,
+        boxShadow: `0 0 20px ${color}18, 0 4px 16px rgba(14,23,38,0.07), inset 0 1px 2px rgba(255,255,255,0.95)`,
+      }}
+      whileHover={{
+        scale: 1.05,
+        boxShadow: `0 0 32px ${color}30, 0 8px 24px rgba(14,23,38,0.10), inset 0 1px 2px rgba(255,255,255,0.95)`,
+      }}
     >
-      {char}
+      {/* Colored left accent bar */}
+      <div
+        className="w-[3px] h-[20px] rounded-full flex-shrink-0"
+        style={{ background: `linear-gradient(to bottom, ${color}, ${color}60)` }}
+      />
+      <span
+        className="material-symbols-outlined text-[14px]"
+        style={{ color, fontVariationSettings: '"FILL" 1' }}
+      >
+        {icon}
+      </span>
+      <span className="font-mono text-[9.5px] font-bold text-[#334155] uppercase tracking-wider whitespace-nowrap">
+        {label}
+      </span>
     </motion.div>
   );
 }
 
-/* ── Hero pipeline card with cursor-reactive glare ───────────── */
-function HeroCard({
-  activeInd,
-  activeIndustryIdx,
+// ── Phone Mockup with voice states ───────────────────────────
+function PhoneMockup({
+  callState, lastMessage, onCallNow, onEndCall
 }: {
-  activeInd: typeof INDUSTRIES[0];
-  activeIndustryIdx: number;
+  callState: CallState;
+  lastMessage: string;
+  onCallNow: () => void;
+  onEndCall: () => void;
 }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [glare, setGlare] = useState({ x: 50, y: 50, show: false });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = cardRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setGlare({
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
-      show: true,
-    });
-  };
-  const handleMouseLeave = () => setGlare((g) => ({ ...g, show: false }));
+  const isActive = !["idle", "ended", "mic-denied"].includes(callState);
 
   return (
     <motion.div
-      ref={cardRef}
-      className="w-full max-w-[390px] h-[450px] rounded-[36px] bg-white border border-[#0E1726]/5 p-6 shadow-card flex flex-col justify-between relative overflow-hidden"
-      style={{ boxShadow: "0 24px 60px rgba(14,23,38,0.05), inset 0 1px 2px rgba(255,255,255,0.8)" }}
-      whileHover={{ y: -6, boxShadow: "0 36px 80px rgba(14,23,38,0.09), inset 0 1px 2px rgba(255,255,255,0.8)" }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      data-cursor="card"
-      data-cursor-label="Platform"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      style={{ width: 290, flexShrink: 0, position: "relative" }}
     >
-      {/* Ambient gradient overlay */}
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-secondary/2 via-transparent to-[#5B8DEF]/2" />
-
-      {/* Cursor-reactive glare */}
+      {/* Ambient glow behind phone */}
       <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none rounded-[36px] transition-opacity duration-300"
+        className="absolute inset-0 rounded-[52px] pointer-events-none z-0"
         style={{
-          background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(0,194,168,0.07) 0%, transparent 55%)`,
-          opacity: glare.show ? 1 : 0,
+          background: "radial-gradient(ellipse at 50% 40%, rgba(0,194,168,0.18) 0%, rgba(91,141,239,0.10) 50%, transparent 80%)",
+          transform: "scale(1.2) translateY(8px)",
+          filter: "blur(30px)",
         }}
       />
 
-      {/* Card header */}
-      <div className="flex items-center justify-between border-b border-[#0E1726]/5 pb-3 relative z-10">
-        <span className="font-mono text-[9px] font-bold text-[#64748B] uppercase tracking-wider">
-          Xyras Platform Core
-        </span>
-        <span className="font-mono text-[9.5px] text-secondary font-bold animate-pulse">
-          Live Gateway
-        </span>
-      </div>
+      {/* Outer holographic ring pulse */}
+      <motion.div
+        animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.03, 1] }}
+        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+        className="absolute inset-[-4px] rounded-[50px] pointer-events-none z-0"
+        style={{ border: "1px solid rgba(0,194,168,0.25)" }}
+      />
 
-      {/* Central core pipeline */}
-      <div className="flex-1 relative flex flex-col items-center justify-center py-4">
-        {/* Orbit ring with nodes */}
-        <div className="absolute inset-0 flex items-center justify-center z-0">
-          <div className="w-64 h-64 border border-[#0E1726]/3 rounded-full flex items-center justify-center relative select-none">
-            {INDUSTRIES.map((ind, idx) => {
-              const angle = (idx * 2 * Math.PI) / INDUSTRIES.length - Math.PI / 2;
-              const r = 110;
-              const nx = r * Math.cos(angle);
-              const ny = r * Math.sin(angle);
-              const isSelected = activeIndustryIdx === idx;
-              return (
-                <motion.div
-                  key={ind.label}
-                  animate={
-                    isSelected
-                      ? { scale: 1.15, borderColor: ind.color, boxShadow: `0 0 16px ${ind.color}33`, backgroundColor: "#FFFFFF" }
-                      : { scale: 1.0, borderColor: "rgba(14,23,38,0.08)", boxShadow: "none", backgroundColor: "#F8FAFC" }
-                  }
-                  transition={{ duration: 0.4 }}
-                  className="absolute w-9 h-9 rounded-full border flex items-center justify-center flex-shrink-0"
-                  style={{ left: `calc(50% + ${nx}px - 18px)`, top: `calc(50% + ${ny}px - 18px)` }}
-                >
-                  <span
-                    className="material-symbols-outlined text-[16px] transition-colors"
-                    style={{ color: isSelected ? ind.color : "#64748B" }}
-                  >
-                    {ind.icon}
-                  </span>
-                  {isSelected && (
-                    <motion.div
-                      initial={{ left: nx > 0 ? "0%" : "100%", top: ny > 0 ? "0%" : "100%", opacity: 0.8 }}
-                      animate={{ left: "50%", top: "50%", opacity: 0.1 }}
-                      transition={{ repeat: Infinity, duration: 1.1, ease: "linear" }}
-                      className="absolute w-2 h-2 rounded-full pointer-events-none"
-                      style={{ backgroundColor: ind.color }}
-                    />
-                  )}
+      {/* Phone frame */}
+      <div
+        className="relative z-10"
+        style={{
+          background: "linear-gradient(160deg, #1E2C45 0%, #0E1726 60%, #0A1020 100%)",
+          borderRadius: 44,
+          padding: 10,
+          boxShadow: `
+            0 0 0 1px rgba(0,194,168,0.18),
+            0 0 40px rgba(0,194,168,0.10),
+            0 32px 80px rgba(14,23,38,0.28),
+            0 8px 24px rgba(14,23,38,0.12),
+            inset 0 1px 1px rgba(255,255,255,0.06)
+          `,
+        }}
+      >
+        {/* Notch */}
+        <div
+          className="absolute top-[10px] left-1/2 -translate-x-1/2 z-20 flex items-center justify-center"
+          style={{ width: 100, height: 28, background: "linear-gradient(160deg, #1E2C45, #0E1726)", borderRadius: "0 0 20px 20px" }}
+        >
+          <div style={{ width: 60, height: 6, background: "#0A1020", borderRadius: 4 }} />
+        </div>
+
+        {/* Screen */}
+        <div
+          className="relative overflow-hidden flex flex-col"
+          style={{
+            borderRadius: 36,
+            minHeight: 540,
+            background: "linear-gradient(160deg, #F0FDFA 0%, #F8FAFC 40%, #EFF6FF 100%)",
+          }}
+        >
+          {/* Subtle aurora at top of screen */}
+          <div
+            className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-0"
+            style={{
+              background: "linear-gradient(to bottom, rgba(0,194,168,0.08) 0%, transparent 100%)",
+            }}
+          />
+
+          <PhoneStatusBar />
+
+          <div className="flex-1 flex flex-col items-center px-5 pt-3 pb-5 gap-3 relative z-10">
+
+            {/* Agent avatar */}
+            <div className="flex flex-col items-center gap-2">
+              <motion.div
+                animate={isActive ? {
+                  boxShadow: ["0 0 0 0 rgba(0,194,168,0)", "0 0 0 12px rgba(0,194,168,0.12)", "0 0 0 0 rgba(0,194,168,0)"]
+                } : {}}
+                transition={{ repeat: Infinity, duration: 2.2 }}
+                style={{
+                  width: 68, height: 68, borderRadius: "50%",
+                  background: "linear-gradient(135deg, #00C2A8 0%, #5B8DEF 100%)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 4px 20px rgba(0,194,168,0.3), inset 0 1px 2px rgba(255,255,255,0.25)",
+                }}
+              >
+                <span className="font-headline font-bold text-white" style={{ fontSize: 26 }}>A</span>
+              </motion.div>
+
+              <div className="text-center">
+                <p className="font-body font-semibold text-[14.5px] text-[#0E1726]">Aria from Xyras</p>
+                <div className="flex items-center justify-center gap-1.5 mt-0.5">
+                  <AnimatePresence mode="wait">
+                    {callState === "idle" && (
+                      <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-1">
+                        <motion.span animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.8 }} className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span className="font-mono text-[9.5px] text-emerald-600 font-bold uppercase tracking-wider">Available</span>
+                      </motion.div>
+                    )}
+                    {callState === "ringing" && (
+                      <motion.p key="ring" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-mono text-[9.5px] text-secondary font-bold uppercase tracking-wider animate-pulse">Connecting...</motion.p>
+                    )}
+                    {callState === "ai-speaking" && (
+                      <motion.p key="speak" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-mono text-[9.5px] text-secondary font-bold uppercase tracking-wider">Aria speaking</motion.p>
+                    )}
+                    {callState === "listening" && (
+                      <motion.div key="listen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-1">
+                        <motion.span animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 0.9 }} className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                        <span className="font-mono text-[9.5px] text-red-500 font-bold uppercase tracking-wider">Listening</span>
+                      </motion.div>
+                    )}
+                    {callState === "processing" && (
+                      <motion.p key="proc" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-mono text-[9.5px] text-[#64748B] font-bold uppercase tracking-wider animate-pulse">Processing</motion.p>
+                    )}
+                    {callState === "ended" && (
+                      <motion.p key="end" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-mono text-[9.5px] text-[#94A3B8] font-bold uppercase tracking-wider">Call Ended</motion.p>
+                    )}
+                    {callState === "mic-denied" && (
+                      <motion.p key="denied" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-mono text-[9.5px] text-red-500 font-bold">Mic Unavailable</motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+
+            {/* Waveform */}
+            <AnimatePresence>
+              {isActive && callState !== "ringing" && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <Waveform active={callState === "ai-speaking"} />
                 </motion.div>
-              );
-            })}
+              )}
+            </AnimatePresence>
+
+            {/* Message bubble */}
+            <AnimatePresence mode="wait">
+              {isActive && lastMessage && (
+                <motion.div
+                  key={lastMessage.slice(0, 20)}
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full rounded-2xl px-4 py-2.5 text-center"
+                  style={{
+                    background: "rgba(255,255,255,0.7)",
+                    backdropFilter: "blur(12px)",
+                    border: "1px solid rgba(0,194,168,0.15)",
+                    boxShadow: "0 2px 12px rgba(0,194,168,0.08), inset 0 1px 2px rgba(255,255,255,0.9)",
+                  }}
+                >
+                  <p className="font-body text-[11px] text-[#0E1726] leading-snug">{lastMessage}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex-1" />
+
+            {/* Action buttons */}
+            <div className="w-full flex flex-col gap-2.5">
+              {callState === "idle" && (
+                <>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                    onClick={onCallNow}
+                    className="w-full font-extrabold text-primary text-[14px] py-3.5 rounded-2xl relative overflow-hidden"
+                    style={{
+                      background: "linear-gradient(135deg, #00C2A8 0%, #00D4B8 100%)",
+                      boxShadow: "0 4px 24px rgba(0,194,168,0.40), 0 1px 4px rgba(0,194,168,0.20), inset 0 1px 1px rgba(255,255,255,0.3)",
+                    }}
+                  >
+                    <span className="relative z-10">Call Me Now</span>
+                  </motion.button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-px" style={{ background: "rgba(14,23,38,0.07)" }} />
+                    <span className="font-body text-[11px] text-[#94A3B8]">or</span>
+                    <div className="flex-1 h-px" style={{ background: "rgba(14,23,38,0.07)" }} />
+                  </div>
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span className="material-symbols-outlined text-[13px] text-[#94A3B8]">phone</span>
+                    <span className="font-mono text-[11.5px] text-[#64748B] font-bold tracking-wide">+1 (800) XYRAS-AI</span>
+                  </div>
+                </>
+              )}
+
+              {callState === "ringing" && (
+                <div className="flex justify-center py-3">
+                  {[0, 0.3, 0.6].map(d => (
+                    <motion.div
+                      key={d}
+                      className="absolute rounded-full"
+                      animate={{ scale: [1, 2.5], opacity: [0.4, 0] }}
+                      transition={{ repeat: Infinity, duration: 2, delay: d }}
+                      style={{ width: 48, height: 48, border: "1.5px solid #00C2A8" }}
+                    />
+                  ))}
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center z-10 relative"
+                    style={{ background: "linear-gradient(135deg, #00C2A8, #5B8DEF)" }}
+                  >
+                    <span className="material-symbols-outlined text-white text-[22px]" style={{ fontVariationSettings: '"FILL" 1' }}>call</span>
+                  </div>
+                </div>
+              )}
+
+              {["ai-speaking", "listening", "processing"].includes(callState) && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                  onClick={onEndCall}
+                  className="w-full text-white font-extrabold text-[13.5px] py-3.5 rounded-2xl flex items-center justify-center gap-2"
+                  style={{ background: "linear-gradient(135deg, #EF4444, #DC2626)", boxShadow: "0 4px 20px rgba(239,68,68,0.35)" }}
+                >
+                  <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: '"FILL" 1' }}>call_end</span>
+                  End Call
+                </motion.button>
+              )}
+
+              {callState === "ended" && (
+                <motion.button
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  whileHover={{ scale: 1.02 }} onClick={onCallNow}
+                  className="w-full font-extrabold text-[13px] py-3 rounded-2xl"
+                  style={{
+                    background: "rgba(0,194,168,0.1)",
+                    border: "1px solid rgba(0,194,168,0.3)",
+                    color: "#00C2A8",
+                    boxShadow: "0 0 16px rgba(0,194,168,0.12)"
+                  }}
+                >
+                  Call Again
+                </motion.button>
+              )}
+
+              {callState === "mic-denied" && (
+                <p className="text-center font-mono text-[8.5px] text-[#94A3B8] uppercase tracking-wider px-2">
+                  Please enable microphone in browser settings
+                </p>
+              )}
+            </div>
           </div>
         </div>
-
-        {/* Central glowing core */}
-        <div className="relative z-10 w-28 h-28 flex items-center justify-center">
-          <motion.div
-            animate={{ scale: [1, 1.15, 1], borderColor: [activeInd.color, activeInd.color, activeInd.color] }}
-            transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
-            className="absolute inset-0 rounded-full border-2 border-dashed opacity-45 pointer-events-none"
-          />
-          <motion.div
-            animate={{ boxShadow: `0 0 40px ${activeInd.color}25`, borderColor: activeInd.color }}
-            transition={{ duration: 0.4 }}
-            className="w-20 h-20 rounded-full bg-white border flex flex-col items-center justify-center relative"
-          >
-            <motion.div
-              animate={{ scale: [0.95, 1.05, 0.95], backgroundColor: [activeInd.color], opacity: [0.08, 0.16, 0.08] }}
-              transition={{ repeat: Infinity, duration: 2.2 }}
-              className="absolute inset-2 rounded-full"
-            />
-            <span className="material-symbols-outlined text-[26px] z-10" style={{ color: activeInd.color }}>
-              graphic_eq
-            </span>
-          </motion.div>
-        </div>
-
-        {/* Waveform bars */}
-        <div className="h-10 flex items-center justify-center gap-1 mt-6 z-20">
-          {[0.4, 0.9, 0.6, 1.2, 0.5, 0.8, 1.1, 0.7, 0.3].map((val, idx) => (
-            <motion.div
-              key={idx}
-              className="rounded-full"
-              animate={{ height: [8, Math.max(8, 36 * val), 8], backgroundColor: activeInd.color }}
-              transition={{ duration: 1.0, repeat: Infinity, delay: idx * 0.07, ease: "easeInOut" }}
-              style={{ height: "8px", width: "3px" }}
-            />
-          ))}
-        </div>
-
-        {/* Outcome label */}
-        <div className="absolute bottom-1 flex flex-col items-center z-20 w-full">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeIndustryIdx}
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.95 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="bg-[#0E1726] border border-white/5 text-white px-4 py-2.5 rounded-2xl shadow-md flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[15px]" style={{ color: activeInd.color }}>
-                check_circle
-              </span>
-              <span className="font-mono text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">
-                {activeInd.outcome}
-              </span>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Card footer */}
-      <div className="border-t border-[#0E1726]/5 pt-3 flex items-center justify-between relative z-10">
-        <span className="font-mono text-[9px] text-[#64748B] uppercase">Latency // 0.8s avg</span>
-        <span className="font-mono text-[9px] text-[#64748B] uppercase">Concurrency 10k+</span>
       </div>
     </motion.div>
   );
 }
 
-/* ── Main HeroSection ────────────────────────────────────────── */
+// ── Main HeroSection ─────────────────────────────────────────
 export default function HeroSection() {
-  const [langIdx, setLangIdx] = useState(0);
-  const [activeIndustryIdx, setActiveIndustryIdx] = useState(0);
-
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { damping: 30, stiffness: 100 });
-  const springY = useSpring(mouseY, { damping: 30, stiffness: 100 });
-
-  useEffect(() => {
-    const id = setInterval(() => setLangIdx((p) => (p + 1) % LANGUAGE_TAGS.length), 2800);
-    return () => clearInterval(id);
-  }, []);
+  const [callState, setCallState]     = useState<CallState>("idle");
+  const [messages, setMessages]       = useState<Message[]>([]);
+  const [lastMessage, setLastMessage] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
+  const audioRef       = useRef<HTMLAudioElement | null>(null);
+  const endedRef       = useRef(false);
 
   useEffect(() => {
-    const id = setInterval(() => setActiveIndustryIdx((p) => (p + 1) % INDUSTRIES.length), 3200);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    const handle = (e: MouseEvent) => {
-      mouseX.set((e.clientX - window.innerWidth / 2) / (window.innerWidth / 2));
-      mouseY.set((e.clientY - window.innerHeight / 2) / (window.innerHeight / 2));
+    return () => {
+      endedRef.current = true;
+      audioRef.current?.pause();
+      recognitionRef.current?.abort?.();
     };
-    window.addEventListener("mousemove", handle);
-    return () => window.removeEventListener("mousemove", handle);
-  }, [mouseX, mouseY]);
+  }, []);
 
-  const activeInd = INDUSTRIES[activeIndustryIdx];
+  const speak = useCallback(async (userText: string, history: Message[]) => {
+    if (endedRef.current) return;
+    setCallState("processing");
+
+    try {
+      const res = await fetch("/api/voice-demo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userText, history }),
+      });
+      if (endedRef.current) return;
+
+      if (res.headers.get("Content-Type")?.includes("application/json")) {
+        const { text } = await res.json() as { text: string };
+        setLastMessage(text);
+        setMessages(p => [...p, { role: "aria", text }]);
+        setCallState("ai-speaking");
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.rate = 1.05;
+        utt.onend = () => { if (!endedRef.current) startListening([...history, { role: "aria", text }]); };
+        window.speechSynthesis.speak(utt);
+        return;
+      }
+
+      const ariaText = decodeURIComponent(res.headers.get("X-Aria-Response") ?? "");
+      if (ariaText) { setLastMessage(ariaText); setMessages(p => [...p, { role: "aria", text: ariaText }]); }
+
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      setCallState("ai-speaking");
+      audio.onended = () => { URL.revokeObjectURL(url); if (!endedRef.current) startListening([...history, { role: "aria", text: ariaText }]); };
+      audio.onerror = () => { if (!endedRef.current) startListening(history); };
+      await audio.play().catch(() => {});
+    } catch { if (!endedRef.current) startListening(history); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const startListening = useCallback((history: Message[]) => {
+    if (endedRef.current) return;
+    if (typeof window === "undefined") return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+    if (!SR) { setCallState("listening"); return; }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rec: any = new SR();
+    recognitionRef.current = rec;
+    rec.continuous = false; rec.interimResults = false; rec.lang = "en-US";
+    setCallState("listening");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rec.onresult = (e: any) => {
+      const userText: string = e.results[0][0].transcript;
+      setMessages(p => [...p, { role: "user", text: userText }]);
+      setLastMessage(`You: ${userText}`);
+      speak(userText, history);
+    };
+    rec.onerror = () => { if (!endedRef.current) startListening(history); };
+    try { rec.start(); } catch { /* */ }
+  }, [speak]);
+
+  const handleCallNow = useCallback(async () => {
+    endedRef.current = false;
+    setMessages([]); setLastMessage(""); setCallState("ringing");
+    try { await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch { setCallState("mic-denied"); return; }
+    setTimeout(() => { if (!endedRef.current) speak("", []); }, 900);
+  }, [speak]);
+
+  const handleEndCall = useCallback(() => {
+    endedRef.current = true;
+    audioRef.current?.pause();
+    recognitionRef.current?.abort?.();
+    window.speechSynthesis?.cancel();
+    setCallState("ended");
+  }, []);
 
   return (
-    <section className="relative min-h-[92vh] lg:min-h-[100vh] flex flex-col justify-center items-center overflow-hidden py-24 sm:py-32 section-px bg-[#F8FAFC]">
-      <style jsx>{`
-        @keyframes crossfade {
-          0%   { opacity: 0; transform: translateY(5px); }
-          15%  { opacity: 1; transform: translateY(0); }
-          85%  { opacity: 1; transform: translateY(0); }
-          100% { opacity: 0; transform: translateY(-5px); }
-        }
-        .animate-lang { animation: crossfade 2.8s infinite ease-in-out; }
-      `}</style>
-
-      {/* Tech mesh texture */}
+    <section
+      className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden pt-28 pb-16 section-px"
+      style={{
+        background: `
+          radial-gradient(ellipse at 15% 50%, rgba(0,194,168,0.055) 0%, transparent 55%),
+          radial-gradient(ellipse at 85% 25%, rgba(91,141,239,0.04) 0%, transparent 55%),
+          radial-gradient(ellipse at 50% 90%, rgba(0,194,168,0.03) 0%, transparent 50%),
+          #F8FAFC
+        `,
+      }}
+    >
+      {/* Dot grid overlay */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.06] select-none z-0"
-        style={{ backgroundImage: "url('/images/tech_mesh_bg.png')", backgroundSize: "cover", backgroundPosition: "center", mixBlendMode: "multiply" }}
+        className="absolute inset-0 pointer-events-none z-0 opacity-[0.018]"
+        style={{ backgroundImage: "radial-gradient(circle, #0E1726 1px, transparent 1px)", backgroundSize: "30px 30px" }}
       />
 
-      {/* Animated gradient blobs */}
-      <div className="absolute top-[5%] left-[2%] w-[700px] h-[700px] rounded-full bg-gradient-to-tr from-[#00C2A8]/8 to-transparent blur-[120px] pointer-events-none z-0 animate-blob" />
-      <div className="absolute bottom-[0%] right-[0%] w-[800px] h-[600px] rounded-full bg-gradient-to-bl from-[#5B8DEF]/7 to-transparent blur-[140px] pointer-events-none z-0 animate-blob-delay-2" />
-      <div className="absolute top-[50%] left-[40%] w-[400px] h-[400px] rounded-full bg-gradient-to-br from-[#00C2A8]/4 to-[#5B8DEF]/4 blur-[100px] pointer-events-none z-0 animate-blob-delay-4" />
+      {/* ── Animated grid lines (2050 feel) ── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-[0.012]">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="absolute w-px h-full bg-[#0E1726]" style={{ left: `${(i + 1) * 16.6}%` }} />
+        ))}
+      </div>
 
-      {/* Dot grid */}
-      <div
-        className="absolute inset-0 pointer-events-none z-0 opacity-[0.025]"
-        style={{ backgroundImage: "radial-gradient(circle, #0E1726 1px, transparent 1px)", backgroundSize: "28px 28px" }}
-      />
+      <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center gap-10 lg:gap-12">
 
-      {/* Parallax floating characters */}
-      {FLOATING_CHARS.map((c, i) => (
-        <FloatingCharacter key={i} {...c} springX={springX} springY={springY} />
-      ))}
+        {/* ── TOP COPY — centered ── */}
+        <div className="flex flex-col items-center text-center gap-6 max-w-[780px] w-full">
 
-      <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center z-10 relative">
-
-        {/* LEFT — copy + CTAs */}
-        <div className="lg:col-span-7 space-y-6 sm:space-y-8 flex flex-col items-start text-left">
-          {/* Language cycling badge */}
-          <div className="h-6 mb-1">
-            <span
-              key={langIdx}
-              className="animate-lang font-mono text-[10px] font-bold text-secondary bg-[#00C2A8]/10 border border-[#00C2A8]/20 px-3.5 py-1 rounded-md uppercase tracking-widest whitespace-nowrap"
-            >
-              {LANGUAGE_TAGS[langIdx]}
-            </span>
-          </div>
-
-          {/* Headline */}
-          <div className="space-y-4">
-            <motion.h1
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              className="font-headline font-extrabold text-[2.8rem] sm:text-[4rem] lg:text-[4.6rem] xl:text-[5rem] leading-[1.08] text-primary tracking-tight"
-            >
-              Every business call. <br />
-              <span className="text-secondary font-headline font-extrabold italic">Answered instantly.</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-              className="font-body text-[#64748B] text-[16px] sm:text-[18px] lg:text-[19px] leading-relaxed max-w-[42ch]"
-            >
-              AI voice agents that answer calls, qualify leads, book appointments, handle support, and operate 24×7 in multiple languages.
-            </motion.p>
-          </div>
-
-          {/* Magnetic CTAs */}
+          {/* Futuristic pill badge */}
           <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2.5 px-5 py-2 rounded-full relative overflow-hidden"
+            style={{
+              background: "rgba(255,255,255,0.75)",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              border: "1px solid rgba(0,194,168,0.2)",
+              boxShadow: "0 0 20px rgba(0,194,168,0.10), 0 2px 8px rgba(14,23,38,0.05), inset 0 1px 2px rgba(255,255,255,0.9)",
+            }}
+          >
+            {/* Shimmer sweep */}
+            <motion.div
+              animate={{ x: ["-100%", "200%"] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut", repeatDelay: 2 }}
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: "linear-gradient(105deg, transparent 40%, rgba(0,194,168,0.12) 50%, transparent 60%)" }}
+            />
+            <motion.span
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ repeat: Infinity, duration: 1.8 }}
+              className="w-1.5 h-1.5 rounded-full bg-secondary flex-shrink-0"
+            />
+            <span className="font-mono text-[10px] font-bold text-[#0F766E] uppercase tracking-widest relative z-10">
+              AI Can Now Answer &amp; Make Calls On Your Behalf
+            </span>
+            <span className="text-[13px] relative z-10">🎙️</span>
+          </motion.div>
+
+          {/* Headline with floating crafty tags */}
+          <div className="relative w-full">
+            {/* Floating left tag — teal */}
+            <motion.div
+              initial={{ opacity: 0, x: -24, rotate: -5 }}
+              animate={{ opacity: 1, x: 0, rotate: -5, y: [0, -4, 0] }}
+              transition={{
+                opacity: { duration: 0.6, delay: 0.35 },
+                x: { duration: 0.6, delay: 0.35 },
+                y: { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 },
+              }}
+              className="absolute -left-2 sm:-left-6 lg:-left-12 top-[38%] -translate-y-1/2 z-10 hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-full"
+              style={{
+                background: "linear-gradient(135deg, #00C2A8, #00D4B8)",
+                boxShadow: "0 4px 20px rgba(0,194,168,0.35), 0 0 0 1px rgba(255,255,255,0.2), inset 0 1px 2px rgba(255,255,255,0.3)",
+              }}
+            >
+              <span className="material-symbols-outlined text-primary text-[12px]" style={{ fontVariationSettings: '"FILL" 1' }}>swap_calls</span>
+              <span className="font-mono text-[9.5px] font-bold text-primary uppercase tracking-wider">Inbound &amp; Outbound</span>
+            </motion.div>
+
+            {/* Floating right tag — dark navy */}
+            <motion.div
+              initial={{ opacity: 0, x: 24, rotate: 4 }}
+              animate={{ opacity: 1, x: 0, rotate: 4, y: [0, -5, 0] }}
+              transition={{
+                opacity: { duration: 0.6, delay: 0.45 },
+                x: { duration: 0.6, delay: 0.45 },
+                y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1.5 },
+              }}
+              className="absolute -right-2 sm:-right-4 lg:-right-10 top-[18%] -translate-y-1/2 z-10 hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-full"
+              style={{
+                background: "linear-gradient(135deg, #0E1726, #1E2C45)",
+                boxShadow: "0 4px 20px rgba(14,23,38,0.30), 0 0 0 1px rgba(0,194,168,0.15), inset 0 1px 2px rgba(255,255,255,0.06)",
+              }}
+            >
+              <span className="material-symbols-outlined text-secondary text-[12px]" style={{ fontVariationSettings: '"FILL" 1' }}>neurology</span>
+              <span className="font-mono text-[9.5px] font-bold text-white uppercase tracking-wider">Human-Like Voice</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="font-headline font-extrabold text-primary tracking-tight leading-[1.05] px-4 sm:px-8 lg:px-14"
+              style={{ fontSize: "clamp(3rem, 6.5vw, 5.6rem)" }}
+            >
+              Every business call.{"\n"}
+              <br />
+              <span
+                className="italic"
+                style={{
+                  background: "linear-gradient(135deg, #00C2A8 0%, #5B8DEF 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                Handled instantly.
+              </span>
+            </motion.h1>
+          </div>
+
+          {/* Subheadline */}
+          <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="font-body text-[#64748B] text-[17px] sm:text-[18px] leading-relaxed max-w-[40ch]"
+          >
+            Human-like AI voice agents that answer calls, book appointments,
+            qualify leads, and support customers 24/7.
+          </motion.p>
+
+          {/* CTA buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.28 }}
+            className="flex flex-col sm:flex-row items-center gap-3"
           >
             <MagneticButton strength={0.28}>
               <motion.a
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.2, ease: [0.34, 1.56, 0.64, 1] }}
+                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                 href="/#pricing"
-                data-cursor="cta"
-                className="hover-shine cta-magnetic neon-border-hover w-full sm:w-auto bg-secondary text-primary font-extrabold text-[13.5px] uppercase tracking-wider px-8 py-4 rounded-full text-center shadow-[0_6px_28px_rgba(0,194,168,0.30)] border border-secondary/30 block"
+                className="hover-shine cta-magnetic inline-flex items-center justify-center gap-2 font-extrabold text-white text-[13.5px] px-8 py-4 rounded-full"
+                style={{
+                  background: "linear-gradient(135deg, #0E1726 0%, #1E2C45 100%)",
+                  boxShadow: "0 4px 24px rgba(14,23,38,0.28), 0 1px 4px rgba(14,23,38,0.15), inset 0 1px 2px rgba(255,255,255,0.06)",
+                }}
               >
-                Book Demo
+                View Pricing
               </motion.a>
             </MagneticButton>
-            <MagneticButton strength={0.22}>
-              <motion.a
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.2, ease: [0.34, 1.56, 0.64, 1] }}
-                href="/#hear-it-live"
-                data-cursor="hover"
-                className="w-full sm:w-auto border border-[#0E1726]/15 bg-[#0E1726]/5 text-[#0E1726] font-extrabold text-[13.5px] uppercase tracking-wider px-8 py-4 rounded-full text-center flex items-center justify-center gap-2 hover:bg-[#0E1726]/8 transition-colors"
-              >
-                <span className="flex gap-0.5 items-end h-4">
-                  <span className="wave-bar h-2" />
-                  <span className="wave-bar h-3" />
-                  <span className="wave-bar h-4" />
-                  <span className="wave-bar h-3" />
-                  <span className="wave-bar h-2" />
-                </span>
-                Listen to a Call
-              </motion.a>
-            </MagneticButton>
-          </motion.div>
 
-          {/* Social proof strip */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-            className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-2"
-          >
-            {[
-              { icon: "verified", label: "SOC 2 Compliant" },
-              { icon: "bolt",     label: "48h Setup"       },
-              { icon: "language", label: "12+ Languages"   },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center gap-1.5 text-[#64748B]">
-                <span
-                  className="material-symbols-outlined text-secondary text-[14px]"
-                  style={{ fontVariationSettings: '"FILL" 1' }}
-                >
-                  {item.icon}
-                </span>
-                <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider">{item.label}</span>
-              </div>
-            ))}
+            <MagneticButton strength={0.22}>
+              <motion.button
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                onClick={handleCallNow}
+                className="inline-flex items-center justify-center gap-2.5 font-extrabold text-[#0E1726] text-[13.5px] px-8 py-4 rounded-full relative overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.8)",
+                  backdropFilter: "blur(16px)",
+                  border: "1px solid rgba(0,194,168,0.25)",
+                  boxShadow: "0 0 20px rgba(0,194,168,0.10), 0 4px 16px rgba(14,23,38,0.07), inset 0 1px 2px rgba(255,255,255,0.9)",
+                }}
+              >
+                <span className="material-symbols-outlined text-[15px] text-secondary" style={{ fontVariationSettings: '"FILL" 1' }}>mic</span>
+                Try a Conversation
+              </motion.button>
+            </MagneticButton>
           </motion.div>
         </div>
 
-        {/* RIGHT — animated hero card */}
+        {/* ── PHONE VISUAL — self-contained block ── */}
         <motion.div
-          initial={{ opacity: 0, x: 24 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-          className="lg:col-span-5 flex items-center justify-center"
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.85, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
+          className="relative flex items-center justify-center"
+          style={{ minWidth: 320 }}
         >
-          <HeroCard activeInd={activeInd} activeIndustryIdx={activeIndustryIdx} />
+          {/* ── Left chips — positioned relative to phone ── */}
+          <div
+            className="absolute hidden lg:flex flex-col gap-3 items-end"
+            style={{ right: "calc(100% + 20px)", top: "50%", transform: "translateY(-50%)" }}
+          >
+            <HoloChip icon="language" label="Multilingual" color="#00C2A8" delay={0.55} floatDir={1} />
+            <HoloChip icon="auto_stories" label="Trained on Your FAQs" color="#5B8DEF" delay={0.65} floatDir={-1} />
+            <HoloChip icon="bolt" label="0.8s Avg Response" color="#F59E0B" delay={0.75} floatDir={1} />
+          </div>
+
+          {/* Phone */}
+          <PhoneMockup
+            callState={callState}
+            lastMessage={lastMessage}
+            onCallNow={handleCallNow}
+            onEndCall={handleEndCall}
+          />
+
+          {/* ── Note + CURLY arrow starting from the dot ── */}
+          <div
+            className="absolute hidden lg:flex flex-col items-start"
+            style={{ left: "calc(100% + 12px)", top: "8%" }}
+          >
+            {/* Handwritten note */}
+            <motion.p
+              initial={{ opacity: 0, x: 14 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.75 }}
+              style={{
+                fontFamily: "'Caveat', 'Indie Flower', cursive, sans-serif",
+                fontSize: 18,
+                color: "#64748B",
+                transform: "rotate(-5deg)",
+                transformOrigin: "left top",
+                lineHeight: 1.3,
+                marginLeft: 8,
+              }}
+            >
+              Try a FREE<br />demo call!
+            </motion.p>
+
+            {/* Curly S-curve arrow — starts from the dot, wiggles to phone */}
+            <motion.svg
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.8 }}
+              width="130" height="320" viewBox="0 0 130 320" fill="none"
+              style={{ marginTop: -4, marginLeft: 0 }}
+            >
+              {/* The visible starting dot — glowing teal */}
+              <motion.circle
+                cx="88"
+                cy="14"
+                r="4"
+                fill="#00C2A8"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: [0, 1.4, 1], opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.85 }}
+              />
+              {/* Outer glow ring on dot */}
+              <motion.circle
+                cx="88"
+                cy="14"
+                r="7"
+                fill="none"
+                stroke="#00C2A8"
+                strokeWidth="1"
+                opacity="0.4"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: [0.5, 1.5], opacity: [0.5, 0] }}
+                transition={{ repeat: Infinity, duration: 1.8, delay: 1.3, ease: "easeOut" }}
+              />
+              {/* Curly wavy path — from dot (88,14) curling down-left to phone */}
+              <motion.path
+                d="M 88 18 C 105 45, 60 65, 80 95 C 100 125, 45 148, 65 178 C 85 208, 28 228, 15 262 C 8 278, 4 292, 6 308"
+                stroke="#94A3B8"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                fill="none"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 1.6, delay: 1.0, ease: "easeInOut" }}
+              />
+              {/* Arrowhead at bottom */}
+              <motion.path
+                d="M 1 304 L 6 312 L 14 306"
+                stroke="#94A3B8"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2.5, duration: 0.3 }}
+              />
+            </motion.svg>
+          </div>
+
+        </motion.div>
+
+        {/* Mobile chips */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="flex lg:hidden items-center gap-2 flex-wrap justify-center"
+        >
+          {[
+            { icon: "language",    label: "Multilingual",         color: "#00C2A8" },
+            { icon: "auto_stories",label: "Trained on Your FAQs", color: "#5B8DEF" },
+            { icon: "bolt",        label: "0.8s Response",        color: "#F59E0B" },
+          ].map(c => (
+            <div
+              key={c.label}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl"
+              style={{
+                background: "rgba(255,255,255,0.75)",
+                border: `1px solid ${c.color}30`,
+                boxShadow: `0 0 12px ${c.color}15`,
+              }}
+            >
+              <span className="material-symbols-outlined text-[12px]" style={{ color: c.color, fontVariationSettings: '"FILL" 1' }}>{c.icon}</span>
+              <span className="font-mono text-[9px] font-bold text-[#334155] uppercase tracking-wider">{c.label}</span>
+            </div>
+          ))}
         </motion.div>
 
       </div>

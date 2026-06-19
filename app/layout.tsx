@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, Instrument_Sans, Space_Mono } from "next/font/google";
+import { DM_Serif_Display, Instrument_Sans, Space_Mono, Caveat } from "next/font/google";
 import ClientProgress from "./components/ClientProgress";
 import SmoothScroll from "./components/SmoothScroll";
 import "./globals.css";
@@ -26,6 +26,13 @@ const spaceMono = Space_Mono({
   display: "swap",
 });
 
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-caveat",
+  weight: ["400", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Xyras | Intelligent Voice AI for Hospitals",
   description:
@@ -48,7 +55,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSerif.variable} ${instrumentSans.variable} ${spaceMono.variable} scroll-smooth`}
+      className={`${dmSerif.variable} ${instrumentSans.variable} ${spaceMono.variable} ${caveat.variable} scroll-smooth`}
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />

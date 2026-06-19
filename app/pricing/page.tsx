@@ -1,84 +1,87 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { motion, AnimatePresence } from "framer-motion";
 
 const PLANS = [
   {
-    id: "flex",
-    badge: "PAY-AS-YOU-GO",
-    badgeStyle: "bg-slate-100 text-slate-600",
-    name: "Fluid Plan",
-    tagline: "Pay-as-you-go call routing and sifting",
-    priceText: "Custom",
-    priceSub: "Based on requirements",
-    desc: "Our team will contact you and, based on your specific requirements, we will build a custom solution.",
-    everythingIn: null,
+    id: "starter",
+    badge: "CANCEL ANYTIME",
+    name: "Starter",
+    tagline: "For small teams starting with AI voice automation",
+    priceText: "₹9,000",
+    priceSub: "/mo",
+    oldPrice: "₹12,000/mo",
+    discount: "25% OFF",
+    savings: "Save ₹3,000/mo",
+    desc: "A focused starting point for teams ready to automate everyday customer calls without adding operational complexity.",
+    everythingIn: "Starter includes:",
     features: [
-      "Pay only for success calls handled",
-      "Standard voice platform tools",
-      "Dynamic multi-language support",
-      "Smart calendar & booking tools",
-      "Custom operational logic triggers",
-      "Full email & chat support desk",
+      "AI call answering",
+      "Basic appointment booking",
+      "Lead capture",
+      "Standard voice agent setup",
+      "Basic analytics",
+      "Email support",
     ],
-    addOn: "Flexible volume tiers as you grow",
-    cta: "Talk to Us",
-    ctaVariant: "outline" as const,
+    addOn: "Simple monthly plan with no long-term lock-in",
+    cta: "Get Started",
     popular: false,
     dark: false,
   },
   {
     id: "growth",
     badge: "MOST POPULAR",
-    badgeStyle: "bg-[#00C2A8]/10 text-[#00C2A8]",
-    name: "Growth Plan",
-    tagline: "For scaling customer operations desks",
-    priceText: "$40,000",
-    priceSub: "/mo billed monthly",
-    desc: "Ideal for growing businesses requiring robust simultaneous call handling and advanced platform automations.",
-    everythingIn: "Everything in Fluid, plus:",
+    name: "Growth",
+    tagline: "For growing businesses that need more call volume and automation",
+    priceText: "₹21,000",
+    priceSub: "/mo",
+    oldPrice: "₹35,000/mo",
+    discount: "40% OFF",
+    savings: "Save ₹14,000/mo",
+    desc: "Built for scaling customer operations with higher capacity, richer automations, and connected business workflows.",
+    everythingIn: "Everything in Starter, plus:",
     features: [
-      "Up to 500 calls / day",
-      "5 concurrent calls capacity",
-      "Multi-language engine (12+ languages)",
-      "WhatsApp integration included",
-      "Real-time analytics dashboard",
-      "Advanced workflow automation",
+      "Higher call volume",
+      "Multi-language support",
+      "Advanced appointment booking",
+      "CRM and webhook integrations",
+      "WhatsApp and SMS follow-up ready",
+      "Priority support",
+      "Advanced analytics",
     ],
-    addOn: "Includes basic CRM synchronization hooks",
-    cta: "Talk to Us",
-    ctaVariant: "solid" as const,
+    addOn: "Priority onboarding and workflow optimization included",
+    cta: "Start Growth Plan",
     popular: true,
-    dark: false,
+    dark: true,
   },
   {
-    id: "scale",
-    badge: "ENTERPRISE",
-    badgeStyle: "bg-white/15 text-white/80",
-    name: "Enterprise Plan",
-    tagline: "Unlimited multi-chain capabilities",
+    id: "custom",
+    badge: "ENTERPRISE AGREEMENTS",
+    name: "Custom",
+    tagline: "For high-volume teams with advanced workflow and integration needs",
     priceText: "Custom",
-    priceSub: "Enterprise agreements",
-    desc: "For high-volume operations requiring 5,000+ calls per day or more. Talk to us to build your enterprise plan.",
-    everythingIn: "Full AI Voice Platform:",
+    priceSub: "Tailored commercial terms",
+    oldPrice: null,
+    discount: null,
+    savings: null,
+    desc: "A tailored voice-AI deployment designed around your call volume, infrastructure, security, and support requirements.",
+    everythingIn: "Enterprise setup includes:",
     features: [
-      "Designed for 5,000+ calls / day or more",
-      "Talk to us for custom integrations",
-      "Unlimited concurrency channels",
-      "Custom dialect & accent training",
-      "Complete platform CRM integrations",
-      "On-premise deployment options",
-      "99.9% uptime SLA guarantee",
+      "Custom call volume",
+      "Custom AI voice workflow",
+      "Dedicated onboarding",
+      "CRM and calendar integration",
+      "Custom language and accent requirements",
+      "SLA and priority support",
+      "Enterprise deployment options",
     ],
-    addOn: "Custom model training included",
+    addOn: "Custom agreements and deployment architecture",
     cta: "Talk to Us",
-    ctaVariant: "white" as const,
     popular: false,
-    dark: true,
+    dark: false,
   },
 ] as const;
 
@@ -171,83 +174,102 @@ export default function PricingPage() {
         </section>
 
         {/* PRICING CARDS SECTION */}
-        <section className="section-px py-16 bg-[#F8FAFC]">
+        <section className="section-px py-16 sm:py-20 bg-[#F8FAFC]">
           <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-7 items-stretch">
               {PLANS.map((plan) => {
                 return (
                   <div
                     key={plan.id}
-                    className={`relative flex flex-col rounded-3xl overflow-hidden transition-all duration-500 hover:translate-y-[-4px] ${
+                    className={`relative flex flex-col rounded-[28px] transition-all duration-500 hover:-translate-y-1 ${
                       plan.dark
-                        ? "bg-[#0E1726] text-white shadow-card"
-                        : plan.popular
-                        ? "bg-white border-2 border-secondary shadow-[0_20px_50px_rgba(0,194,168,0.12)]"
-                        : "bg-white border border-[#0E1726]/5 shadow-card"
+                        ? "bg-[linear-gradient(155deg,#0B1424_0%,#10243A_58%,#073B3A_100%)] text-white border border-[#00C2A8]/70 shadow-[0_24px_70px_rgba(0,194,168,0.22)] md:-translate-y-3 md:hover:-translate-y-4"
+                        : plan.id === "custom"
+                        ? "bg-[linear-gradient(180deg,#FFFFFF_0%,#F4F8FA_100%)] border border-[#0E1726]/10 shadow-[0_18px_45px_rgba(14,23,38,0.08)]"
+                        : "bg-white border border-[#0E1726]/10 shadow-[0_16px_40px_rgba(14,23,38,0.07)]"
                     }`}
                   >
+                    {plan.popular && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap rounded-full bg-gradient-to-r from-[#00C2A8] to-[#5B8DEF] px-5 py-2 text-[10px] font-extrabold tracking-[0.18em] text-white uppercase shadow-[0_8px_24px_rgba(0,194,168,0.35)]">
+                        Most Popular
+                      </div>
+                    )}
                     {/* Card body */}
-                    <div className="p-6 sm:p-8 flex flex-col gap-5 flex-1 text-left">
-                      <span className={`self-start text-[9px] font-extrabold tracking-[0.2em] uppercase px-3 py-1 rounded-full ${plan.badgeStyle}`}>
+                    <div className="p-6 sm:p-7 lg:p-8 flex flex-col gap-5 flex-1 text-left overflow-hidden rounded-t-[28px]">
+                      <span className={`self-start text-[9px] font-extrabold tracking-[0.18em] uppercase px-3 py-1.5 rounded-full ${
+                        plan.dark
+                          ? "bg-white/10 text-teal-200 border border-white/10"
+                          : plan.id === "custom"
+                          ? "bg-[#0E1726] text-white"
+                          : "bg-slate-100 text-slate-600 border border-slate-200"
+                      }`}>
                         {plan.badge}
                       </span>
 
                       {/* Title & Tagline */}
                       <div>
-                        <h3 className={`font-headline font-extrabold text-[2rem] sm:text-[2.2rem] leading-none ${plan.dark ? "text-white" : "text-[#0E1726]"}`}>
+                        <h3 className={`font-headline font-extrabold text-[2rem] sm:text-[2.25rem] leading-none ${plan.dark ? "text-white" : "text-[#0E1726]"}`}>
                           {plan.name}
                         </h3>
-                        <p className={`text-[12.5px] mt-1.5 ${plan.dark ? "text-slate-400" : "text-slate-500"}`}>
+                        <p className={`text-[13px] mt-2 leading-relaxed ${plan.dark ? "text-slate-300" : "text-slate-500"}`}>
                           {plan.tagline}
                         </p>
                       </div>
 
-                      {/* Price Grid */}
+                      {/* Price and discount badges */}
                       <div>
-                        <div className={`flex items-baseline gap-1 ${plan.dark ? "text-white" : "text-[#0E1726]"}`}>
-                          {plan.priceText.startsWith("$") || plan.priceText.startsWith("₹") ? (
-                            <>
-                              <span className="font-headline font-extrabold text-[3rem] sm:text-[3.5rem] leading-none">
-                                {plan.priceText}
-                              </span>
-                              <span className={`text-[13px] font-medium ${plan.dark ? "text-slate-400" : "text-slate-500"}`}>{plan.priceSub}</span>
-                            </>
-                          ) : (
-                            <>
-                              <div className="font-headline font-extrabold text-[2.2rem] leading-none">{plan.priceText}</div>
-                            </>
-                          )}
+                        {plan.oldPrice && (
+                          <p className={`text-[12px] line-through mb-1.5 ${plan.dark ? "text-slate-500" : "text-slate-400"}`}>
+                            {plan.oldPrice}
+                          </p>
+                        )}
+                        <div className={`flex items-end gap-1.5 ${plan.dark ? "text-white" : "text-[#0E1726]"}`}>
+                          <span className={`font-headline font-extrabold leading-none ${
+                            plan.priceText === "Custom" ? "text-[2.8rem]" : "text-[3rem] sm:text-[3.35rem]"
+                          }`}>
+                            {plan.priceText}
+                          </span>
+                          <span className={`text-[13px] font-semibold pb-1 ${plan.dark ? "text-slate-300" : "text-slate-500"}`}>
+                            {plan.priceSub}
+                          </span>
                         </div>
-                        {!(plan.priceText.startsWith("$") || plan.priceText.startsWith("₹")) && (
-                          <p className={`text-[12.5px] mt-1.5 ${plan.dark ? "text-slate-400" : "text-slate-500"}`}>{plan.priceSub}</p>
+                        {(plan.discount || plan.savings) && (
+                          <div className="flex flex-wrap gap-2 mt-4">
+                            {plan.discount && (
+                              <span className="rounded-full bg-gradient-to-r from-violet-600 to-purple-500 px-3 py-1.5 text-[10px] font-extrabold tracking-wide text-white shadow-sm">
+                                {plan.discount}
+                              </span>
+                            )}
+                            {plan.savings && (
+                              <span className="rounded-full bg-orange-50 border border-orange-200 px-3 py-1.5 text-[10px] font-extrabold tracking-wide text-orange-700">
+                                {plan.savings}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
 
-                      <p className={`text-[13px] leading-relaxed ${plan.dark ? "text-slate-400" : "text-slate-500"}`}>
+                      <p className={`text-[13px] leading-relaxed ${plan.dark ? "text-slate-300" : "text-slate-500"}`}>
                         {plan.desc}
                       </p>
 
                       {/* Divider */}
-                      <div className={`h-px ${plan.dark ? "bg-white/10" : "bg-[#0E1726]/5"} my-2`} />
+                      <div className={`h-px ${plan.dark ? "bg-white/10" : "bg-[#0E1726]/7"} my-1`} />
 
                       {/* Feature Checklist */}
                       <div className="flex flex-col gap-3">
-                        {plan.everythingIn && (
-                          <p className="text-[11px] font-bold text-secondary uppercase tracking-wider mb-1">
-                            {plan.everythingIn}
-                          </p>
-                        )}
+                        <p className={`text-[10px] font-extrabold uppercase tracking-[0.16em] mb-1 ${plan.dark ? "text-teal-300" : "text-secondary"}`}>
+                          {plan.everythingIn}
+                        </p>
                         {plan.features.map((feature) => (
                           <div key={feature} className="flex items-start gap-2.5">
                             <span 
-                              className={`material-symbols-outlined text-[16px] flex-shrink-0 mt-0.5 ${
-                                plan.dark ? "text-secondary" : "text-secondary"
-                              }`}
+                              className="material-symbols-outlined text-[17px] flex-shrink-0 mt-0.5 text-secondary"
                               style={{ fontVariationSettings: '"FILL" 1' }}
                             >
                               check_circle
                             </span>
-                            <span className={`text-[13px] ${plan.dark ? "text-slate-300" : "text-slate-600"}`}>
+                            <span className={`text-[13px] leading-snug ${plan.dark ? "text-slate-200" : "text-slate-600"}`}>
                               {feature}
                             </span>
                           </div>
@@ -255,28 +277,28 @@ export default function PricingPage() {
                       </div>
 
                       {/* Dynamic Addon Strip */}
-                      <div className={`flex items-center gap-2 pt-4 border-t ${plan.dark ? "border-white/10" : "border-[#0E1726]/5"}`}>
-                        <span className="material-symbols-outlined text-[15px] text-slate-400">smart_toy</span>
-                        <span className={`text-[12px] ${plan.dark ? "text-slate-400" : "text-slate-500"}`}>
+                      <div className={`flex items-center gap-2 pt-4 border-t mt-auto ${plan.dark ? "border-white/10" : "border-[#0E1726]/7"}`}>
+                        <span className={`material-symbols-outlined text-[15px] ${plan.dark ? "text-teal-300" : "text-slate-400"}`}>verified_user</span>
+                        <span className={`text-[11.5px] ${plan.dark ? "text-slate-300" : "text-slate-500"}`}>
                           {plan.addOn}
                         </span>
                       </div>
                     </div>
 
                     {/* Booking CTA Button */}
-                    <div className={`px-6 sm:px-8 pb-6 sm:pb-8 pt-2 border-t ${plan.dark ? "border-white/10" : "border-[#0E1726]/5"}`}>
+                    <div className="px-6 sm:px-7 lg:px-8 pb-6 sm:pb-7 lg:pb-8 pt-2">
                       <button
                         onClick={() => {
                           setActivePlan(plan);
                           setSuccess(false);
                           setErrorMsg("");
                         }}
-                        className={`w-full flex items-center justify-between px-5 py-4 rounded-xl font-bold text-[13px] uppercase tracking-wider transition-all group cursor-pointer ${
+                        className={`w-full flex items-center justify-between px-5 py-4 rounded-xl font-bold text-[13px] uppercase tracking-wider transition-all group cursor-pointer shadow-sm ${
                           plan.dark
-                            ? "bg-white text-primary hover:bg-slate-50"
-                            : plan.popular
-                            ? "bg-secondary text-primary hover:scale-[1.01]"
-                            : "bg-[#0E1726] text-white hover:bg-primary/90"
+                            ? "bg-secondary text-[#07131F] hover:bg-teal-300 hover:scale-[1.01] shadow-[0_8px_28px_rgba(0,194,168,0.25)]"
+                            : plan.id === "custom"
+                            ? "bg-white border border-[#0E1726]/15 text-[#0E1726] hover:border-secondary hover:text-secondary"
+                            : "bg-[#0E1726] text-white hover:bg-[#17243A]"
                         }`}
                       >
                         <span>{plan.cta}</span>

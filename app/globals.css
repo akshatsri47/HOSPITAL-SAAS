@@ -49,6 +49,7 @@
   --font-headline: var(--font-dm-serif), serif;
   --font-body:     var(--font-instrument), sans-serif;
   --font-mono:     var(--font-space-mono), monospace;
+  --font-handwritten: var(--font-caveat), cursive;
 }
 
 /* ── Reset ──────────────────────────────────────────────── */
