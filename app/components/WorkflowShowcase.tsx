@@ -10,7 +10,6 @@ type UseCase = {
   description: string;
   agent: string;
   role: string;
-  portraitPosition: string;
   accent: string;
   icon: string;
   language: string;
@@ -25,7 +24,6 @@ const USE_CASES: Record<Mode, UseCase[]> = {
         "Answers routine questions, shares business information, and guides callers to the right next step.",
       agent: "Meera",
       role: "Customer Support",
-      portraitPosition: "33.333% 50%",
       accent: "#5EEAD4",
       icon: "forum",
       language: "English · IN",
@@ -37,7 +35,6 @@ const USE_CASES: Record<Mode, UseCase[]> = {
         "Checks availability, schedules appointments, and handles rescheduling without keeping callers waiting.",
       agent: "Priya",
       role: "Booking Assistant",
-      portraitPosition: "0% 50%",
       accent: "#8EAFFF",
       icon: "calendar_month",
       language: "Hindi · IN",
@@ -49,7 +46,6 @@ const USE_CASES: Record<Mode, UseCase[]> = {
         "Retrieves order details, explains delivery updates, and resolves common service questions.",
       agent: "Rohan",
       role: "Support Agent",
-      portraitPosition: "66.666% 50%",
       accent: "#B8A5FF",
       icon: "package_2",
       language: "English · IN",
@@ -63,7 +59,6 @@ const USE_CASES: Record<Mode, UseCase[]> = {
         "Calls new leads, asks qualifying questions, and routes interested prospects directly to your team.",
       agent: "Kavya",
       role: "Sales Assistant",
-      portraitPosition: "100% 50%",
       accent: "#5EEAD4",
       icon: "trending_up",
       language: "English · IN",
@@ -75,7 +70,6 @@ const USE_CASES: Record<Mode, UseCase[]> = {
         "Sends polite reminder calls, confirms payment intent, and updates the follow-up status automatically.",
       agent: "Meera",
       role: "Reminder Agent",
-      portraitPosition: "33.333% 50%",
       accent: "#8EAFFF",
       icon: "notifications_active",
       language: "Hindi · IN",
@@ -87,7 +81,6 @@ const USE_CASES: Record<Mode, UseCase[]> = {
         "Reminds customers before scheduled appointments and confirms attendance without manual follow-up.",
       agent: "Priya",
       role: "Scheduling Agent",
-      portraitPosition: "0% 50%",
       accent: "#B8A5FF",
       icon: "event_available",
       language: "English · IN",
@@ -164,21 +157,86 @@ function VoiceVisual({
         </span>
       </div>
 
-      <motion.div
-        animate={playing ? { scale: [1, 1.025, 1] } : { scale: 1 }}
-        transition={{ duration: 1.8, repeat: playing ? Infinity : 0 }}
-        className="absolute left-1/2 top-[45%] z-10 h-[130px] w-[130px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[26px] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
-        style={{
-          backgroundImage: "url('/images/agent_portraits.png')",
-          backgroundSize: "400% 180%",
-          backgroundPosition: item.portraitPosition,
-          backgroundRepeat: "no-repeat",
-        }}
+      <div
+        className="absolute left-1/2 top-[45%] z-10 h-[138px] w-[138px] -translate-x-1/2 -translate-y-1/2"
         role="img"
-        aria-label={`${item.agent}, ${item.role}`}
+        aria-label={`${item.title} AI voice visualization`}
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-[#07101F]/28 via-transparent to-white/[0.04]" />
-      </motion.div>
+        <motion.div
+          animate={{ rotate: playing ? 360 : 12 }}
+          transition={{
+            duration: 8,
+            repeat: playing ? Infinity : 0,
+            ease: "linear",
+          }}
+          className="absolute inset-0 rounded-full border border-dashed opacity-55"
+          style={{ borderColor: item.accent }}
+        >
+          {[0, 1, 2].map((dot) => (
+            <span
+              key={dot}
+              className="absolute h-2 w-2 rounded-full"
+              style={{
+                backgroundColor: item.accent,
+                boxShadow: `0 0 14px ${item.accent}`,
+                left: dot === 0 ? "8%" : dot === 1 ? "79%" : "45%",
+                top: dot === 0 ? "24%" : dot === 1 ? "18%" : "93%",
+              }}
+            />
+          ))}
+        </motion.div>
+
+        <motion.div
+          animate={
+            playing
+              ? {
+                  rotate: -360,
+                  scale: [0.96, 1.04, 0.96],
+                }
+              : { rotate: -8, scale: 1 }
+          }
+          transition={{
+            rotate: { duration: 6, repeat: playing ? Infinity : 0, ease: "linear" },
+            scale: { duration: 1.8, repeat: playing ? Infinity : 0, ease: "easeInOut" },
+          }}
+          className="absolute inset-[15px] rounded-full border"
+          style={{
+            borderColor: `${item.accent}80`,
+            boxShadow: `inset 0 0 24px ${item.accent}18, 0 0 30px ${item.accent}18`,
+          }}
+        />
+
+        <motion.div
+          animate={
+            playing
+              ? {
+                  scale: [1, 1.08, 1],
+                  boxShadow: [
+                    `0 0 25px ${item.accent}35`,
+                    `0 0 55px ${item.accent}70`,
+                    `0 0 25px ${item.accent}35`,
+                  ],
+                }
+              : { scale: 1, boxShadow: `0 0 35px ${item.accent}35` }
+          }
+          transition={{ duration: 1.4, repeat: playing ? Infinity : 0 }}
+          className="absolute inset-[30px] flex items-center justify-center rounded-full border border-white/20 backdrop-blur-md"
+          style={{
+            background: `radial-gradient(circle at 35% 28%, white 0%, ${item.accent} 16%, ${item.accent}88 48%, #081727 100%)`,
+          }}
+        >
+          <span className="material-symbols-outlined text-[34px] text-white drop-shadow-[0_3px_8px_rgba(0,0,0,0.35)]">
+            {item.icon}
+          </span>
+        </motion.div>
+
+        <motion.span
+          animate={playing ? { opacity: [0.2, 0.8, 0.2], scale: [0.75, 1.25, 0.75] } : {}}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-[15%] top-[76%] h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: item.accent, boxShadow: `0 0 10px ${item.accent}` }}
+        />
+      </div>
 
       <motion.button
         type="button"
@@ -186,7 +244,7 @@ function VoiceVisual({
         aria-label={playing ? `Pause ${item.title} demo` : `Play ${item.title} demo`}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.93 }}
-        className="absolute left-[calc(50%+38px)] top-[calc(45%+34px)] z-20 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl bg-white text-primary shadow-[0_14px_34px_rgba(0,0,0,0.34)]"
+        className="absolute left-[calc(50%+54px)] top-[calc(45%+45px)] z-20 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-2xl bg-white text-primary shadow-[0_14px_34px_rgba(0,0,0,0.34)]"
       >
         {playing && (
           <span className="absolute inset-[-6px] animate-ping rounded-[20px] border border-[#00C2A8]/25" />

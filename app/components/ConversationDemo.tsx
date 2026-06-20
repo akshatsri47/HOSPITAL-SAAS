@@ -345,14 +345,14 @@ export default function ConversationDemo() {
                       <div
                         className="hidden lg:block absolute inset-0 bg-cover bg-no-repeat bg-center"
                         style={{
-                          backgroundImage: `url('/images/${agent.id}.png')`,
+                          backgroundImage: `url('/images/${agent.id}-animated.png')`,
                         }}
                       />
                       {/* Circle avatar on mobile */}
                       <div
                         className="lg:hidden w-12 h-12 rounded-full bg-cover bg-no-repeat bg-center border border-[#0E1726]/10 flex-shrink-0 shadow-sm"
                         style={{
-                          backgroundImage: `url('/images/${agent.id}.png')`,
+                          backgroundImage: `url('/images/${agent.id}-animated.png')`,
                         }}
                       />
                       {/* Label Badge */}
@@ -380,7 +380,7 @@ export default function ConversationDemo() {
                         <div
                           className="absolute inset-0 bg-cover bg-no-repeat bg-center"
                           style={{
-                            backgroundImage: `url('/images/${agent.id}.png')`,
+                            backgroundImage: `url('/images/${agent.id}-animated.png')`,
                           }}
                         />
                         {/* Ambient shadow gradient */}

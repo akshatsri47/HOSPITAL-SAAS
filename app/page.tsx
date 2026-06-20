@@ -7,6 +7,7 @@ import StickyStorySection from "./components/StickyStorySection";
 import WorkflowShowcase from "./components/WorkflowShowcase";
 import TestimonialQuote from "./components/TestimonialQuote";
 import IndustryShowcase from "./components/IndustryShowcase";
+import AgentBuilderSection from "./components/AgentBuilderSection";
 import LanguagesShowcase from "./components/LanguagesShowcase";
 import CtaSection from "./components/CtaSection";
 import Footer from "./components/Footer";
@@ -25,6 +26,7 @@ export default function Home() {
           <WorkflowShowcase />
           <TestimonialQuote />
           <IndustryShowcase />
+          <AgentBuilderSection />
           <LanguagesShowcase />
           <CtaSection />
         </main>

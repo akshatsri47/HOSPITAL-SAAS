@@ -20,11 +20,11 @@ const LANGUAGES: Language[] = [
     sampleText: "नमस्ते, मैं आपका एआई वॉइस एजेंट हूँ। मैं आपकी क्या मदद कर सकता हूँ?",
   },
   {
-    name: "English (India)",
-    nativeName: "English",
-    flagUrl: "https://flagcdn.com/w80/in.png",
-    langCode: "en-IN",
-    sampleText: "Hello, this is your AI voice agent. How can I help you today?",
+    name: "Spanish",
+    nativeName: "Español",
+    flagUrl: "https://flagcdn.com/w80/es.png",
+    langCode: "es-ES",
+    sampleText: "Hola, soy tu agente de voz con IA. ¿Cómo puedo ayudarte hoy?",
   },
   {
     name: "Tamil",
@@ -34,60 +34,18 @@ const LANGUAGES: Language[] = [
     sampleText: "வணக்கம், நான் உங்கள் ஏஐ குரல் உதவியாளர். நான் உங்களுக்கு எவ்வாறு உதவ முடியும்?",
   },
   {
-    name: "Telugu",
-    nativeName: "తెలుగు",
-    flagUrl: "https://flagcdn.com/w80/in.png",
-    langCode: "te-IN",
-    sampleText: "నమస్తే, నేను మీ ఏఐ వాయిస్ ఏజెంట్. ఈ రోజు మీకు ఏ విధంగా సహాయం చేయగలను?",
-  },
-  {
-    name: "Kannada",
-    nativeName: "ಕನ್ನಡ",
-    flagUrl: "https://flagcdn.com/w80/in.png",
-    langCode: "kn-IN",
-    sampleText: "ನಮಸ್ತೆ, ನಾನು ನಿಮ್ಮ ಎಐ ಧ್ವನಿ ಸಹಾಯಕ. ನಾನು ಇಂದು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?",
-  },
-  {
-    name: "Malayalam",
-    nativeName: "മലയാളം",
-    flagUrl: "https://flagcdn.com/w80/in.png",
-    langCode: "ml-IN",
-    sampleText: "നമസ്കാരം, ഞാൻ നിങ്ങളുടെ എഐ ശബ്ദ സഹായിയാണ്. ഇന്ന് ഞാൻ നിങ്ങൾക്ക് എങ്ങനെയാണ് സഹായിക്കേണ്ടത്?",
-  },
-  {
-    name: "Marathi",
-    nativeName: "मराठी",
-    flagUrl: "https://flagcdn.com/w80/in.png",
-    langCode: "mr-IN",
-    sampleText: "नमस्कार, मी तुमचा एआय व्हॉईस असिस्टंट आहे. आज मी तुम्हाला कशी मदत करू शकतो?",
-  },
-  {
-    name: "Bengali",
-    nativeName: "বাংলা",
-    flagUrl: "https://flagcdn.com/w80/in.png",
-    langCode: "bn-IN",
-    sampleText: "নমস্কার, আমি আপনার এআই ভয়েস এজেন্ট। আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?",
-  },
-  {
-    name: "Gujarati",
-    nativeName: "ગુજરાતી",
-    flagUrl: "https://flagcdn.com/w80/in.png",
-    langCode: "gu-IN",
-    sampleText: "નમસ્તે, હું તમારો એઆઈ વોઈस એજન્ટ છું. આજે હું તમને કેવી રીતે મદદ કરી શકું?",
-  },
-  {
-    name: "Spanish",
-    nativeName: "Español",
-    flagUrl: "https://flagcdn.com/w80/es.png",
-    langCode: "es-ES",
-    sampleText: "Hola, soy tu agente de voz con IA. ¿Cómo puedo ayudarte hoy?",
-  },
-  {
     name: "French",
     nativeName: "Français",
     flagUrl: "https://flagcdn.com/w80/fr.png",
     langCode: "fr-FR",
     sampleText: "Bonjour, je suis votre agent vocal IA. Comment puis-je vous aider aujourd'hui?",
+  },
+  {
+    name: "English (India)",
+    nativeName: "English",
+    flagUrl: "https://flagcdn.com/w80/in.png",
+    langCode: "en-IN",
+    sampleText: "Hello, this is your AI voice agent. How can I help you today?",
   },
   {
     name: "German",
@@ -97,11 +55,11 @@ const LANGUAGES: Language[] = [
     sampleText: "Hallo, ich bin Ihr KI-Sprachassistent. Wie kann ich Ihnen heute helfen?",
   },
   {
-    name: "Italian",
-    nativeName: "Italiano",
-    flagUrl: "https://flagcdn.com/w80/it.png",
-    langCode: "it-IT",
-    sampleText: "Ciao, sono il tuo agente vocale IA. Come posso aiutarti oggi?",
+    name: "Telugu",
+    nativeName: "తెలుగు",
+    flagUrl: "https://flagcdn.com/w80/in.png",
+    langCode: "te-IN",
+    sampleText: "నమస్తే, నేను మీ ఏఐ వాయిస్ ఏజెంట్. ఈ రోజు మీకు ఏ విధంగా సహాయం చేయగలను?",
   },
   {
     name: "Arabic",
@@ -111,11 +69,39 @@ const LANGUAGES: Language[] = [
     sampleText: "مرحباً، أنا وكيل الصوت بالذكاء الاصطناعي الخاص بك. كيف يمكنني مساعدتك اليوم؟",
   },
   {
+    name: "Marathi",
+    nativeName: "मराठी",
+    flagUrl: "https://flagcdn.com/w80/in.png",
+    langCode: "mr-IN",
+    sampleText: "नमस्कार, मी तुमचा एआय व्हॉईस असिस्टंट आहे. आज मी तुम्हाला कशी मदत करू शकतो?",
+  },
+  {
+    name: "Italian",
+    nativeName: "Italiano",
+    flagUrl: "https://flagcdn.com/w80/it.png",
+    langCode: "it-IT",
+    sampleText: "Ciao, sono il tuo agente vocale IA. Come posso aiutarti oggi?",
+  },
+  {
+    name: "Bengali",
+    nativeName: "বাংলা",
+    flagUrl: "https://flagcdn.com/w80/in.png",
+    langCode: "bn-IN",
+    sampleText: "নমস্কার, আমি আপনার এআই ভয়েস এজেন্ট। আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?",
+  },
+  {
     name: "Portuguese",
     nativeName: "Português",
     flagUrl: "https://flagcdn.com/w80/pt.png",
     langCode: "pt-PT",
     sampleText: "Olá, sou o seu agente de voz IA. Como posso ajudar você hoje?",
+  },
+  {
+    name: "Kannada",
+    nativeName: "ಕನ್ನಡ",
+    flagUrl: "https://flagcdn.com/w80/in.png",
+    langCode: "kn-IN",
+    sampleText: "ನಮಸ್ತೆ, ನಾನು ನಿಮ್ಮ ಎಐ ಧ್ವನಿ ಸಹಾಯಕ. ನಾನು ಇಂದು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?",
   },
   {
     name: "Russian",
@@ -124,7 +110,23 @@ const LANGUAGES: Language[] = [
     langCode: "ru-RU",
     sampleText: "Здравствуйте, я ваш голосовой ассистент ИИ. Чем я могу помочь вам сегодня?",
   },
+  {
+    name: "Malayalam",
+    nativeName: "മലയാളം",
+    flagUrl: "https://flagcdn.com/w80/in.png",
+    langCode: "ml-IN",
+    sampleText: "നമസ്കാരം, ഞാൻ നിങ്ങളുടെ എഐ ശബ്ദ സഹായിയാണ്. ഇന്ന് ഞാൻ നിങ്ങൾക്ക് എങ്ങനെയാണ് സഹായിക്കേണ്ടത്?",
+  },
+  {
+    name: "Gujarati",
+    nativeName: "ગુજરાતી",
+    flagUrl: "https://flagcdn.com/w80/in.png",
+    langCode: "gu-IN",
+    sampleText: "નમસ્તે, હું તમારો એઆઈ વોઈસ એજન્ટ છું. આજે હું તમને કેવી રીતે મદદ કરી શકું?",
+  },
 ];
+
+
 
 export default function LanguagesShowcase() {
   const [isExpanded, setIsExpanded] = useState(false);

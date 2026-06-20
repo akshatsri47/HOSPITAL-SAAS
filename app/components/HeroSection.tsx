@@ -536,7 +536,7 @@ export default function HeroSection() {
                 x: { duration: 0.6, delay: 0.35 },
                 y: { duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 },
               }}
-              className="absolute -left-2 sm:-left-6 lg:-left-12 top-[38%] -translate-y-1/2 z-10 hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-full"
+              className="absolute left-[-20px] md:left-[-70px] lg:left-[-120px] xl:left-[-170px] top-[38%] -translate-y-1/2 z-10 hidden md:flex items-center gap-2 px-4 py-2.5 rounded-full"
               style={{
                 background: "linear-gradient(135deg, #00C2A8, #00D4B8)",
                 boxShadow: "0 4px 20px rgba(0,194,168,0.35), 0 0 0 1px rgba(255,255,255,0.2), inset 0 1px 2px rgba(255,255,255,0.3)",
@@ -555,7 +555,7 @@ export default function HeroSection() {
                 x: { duration: 0.6, delay: 0.45 },
                 y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1.5 },
               }}
-              className="absolute -right-2 sm:-right-4 lg:-right-10 top-[18%] -translate-y-1/2 z-10 hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-full"
+              className="absolute right-[-20px] md:right-[-50px] lg:right-[-100px] xl:right-[-150px] top-[18%] -translate-y-1/2 z-10 hidden md:flex items-center gap-2 px-4 py-2.5 rounded-full"
               style={{
                 background: "linear-gradient(135deg, #0E1726, #1E2C45)",
                 boxShadow: "0 4px 20px rgba(14,23,38,0.30), 0 0 0 1px rgba(0,194,168,0.15), inset 0 1px 2px rgba(255,255,255,0.06)",
@@ -569,13 +569,12 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="font-headline font-extrabold text-primary tracking-tight leading-[1.05] px-4 sm:px-8 lg:px-14"
-              style={{ fontSize: "clamp(3rem, 6.5vw, 5.6rem)" }}
+              className="font-headline font-extrabold text-primary tracking-tight leading-[1.05] px-4"
+              style={{ fontSize: "clamp(2.8rem, 5.8vw, 5.2rem)" }}
             >
-              Every business call.{"\n"}
-              <br />
+              <span className="block">Every business call.</span>
               <span
-                className="italic"
+                className="block italic"
                 style={{
                   background: "linear-gradient(135deg, #00C2A8 0%, #5B8DEF 100%)",
                   WebkitBackgroundClip: "text",
