@@ -243,8 +243,8 @@ export default function ConversationDemo() {
   };
 
   return (
-    <section className="section-px pt-28 pb-20 sm:pt-36 sm:pb-28 bg-[#F8FAFC] border-b border-[#0E1726]/5 overflow-hidden scroll-mt-24" id="hear-it-live">
-      <div className="max-w-6xl mx-auto flex flex-col items-center relative">
+    <section className="px-4 sm:px-6 lg:px-6 pt-28 pb-20 sm:pt-36 sm:pb-28 bg-[#F8FAFC] border-b border-[#0E1726]/5 overflow-hidden scroll-mt-24" id="hear-it-live">
+      <div className="max-w-[1480px] mx-auto flex flex-col items-center relative">
 
         {/* ── Title block with custom badges & handwritten notes ── */}
         <div className="relative text-center mb-16 max-w-3xl mx-auto w-full px-4">
@@ -299,13 +299,13 @@ export default function ConversationDemo() {
         </div>
 
         {/* ── Subtitle header indicator ── */}
-        <div className="w-full max-w-6xl mb-6 flex items-center gap-2 text-[#64748B] font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-4">
+        <div className="w-full max-w-[1480px] mb-6 flex items-center gap-2 text-[#64748B] font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-4 lg:px-0">
           <span className="material-symbols-outlined text-[13px] sm:text-[14px]">headset</span>
           400+ Neural Voices For Lifelike Voice Agents
         </div>
 
         {/* ── Agents Showcase Accordion ── */}
-        <div className="flex flex-col lg:flex-row gap-5 w-full max-w-6xl px-4 lg:h-[460px]">
+        <div className="flex flex-col lg:flex-row gap-5 w-full max-w-[1480px] px-4 lg:px-0 lg:h-[460px]">
           {AGENTS.map((agent) => {
             const isActive = activeId === agent.id;
             const isAgentPlaying = playingId === agent.id && isPlaying;
@@ -321,13 +321,13 @@ export default function ConversationDemo() {
                 className={`relative rounded-[28px] overflow-hidden cursor-pointer border shadow-sm w-full lg:h-full ${
                   isActive
                     ? `${agent.bgColor} border-${agent.themeColor}/10 lg:flex-grow p-0 flex flex-col lg:flex-row`
-                    : "bg-white border-[#0E1726]/5 h-[80px] lg:w-[140px] p-3 lg:p-0 flex flex-row lg:flex-col items-center lg:justify-end lg:items-stretch gap-4 flex-shrink-0"
+                    : "bg-white border-[#0E1726]/5 h-[80px] lg:w-[140px] xl:w-[170px] p-3 lg:p-0 flex flex-row lg:flex-col items-center lg:justify-end lg:items-stretch gap-4 flex-shrink-0"
                 }`}
                 layout
                 transition={{
                   type: "spring",
-                  stiffness: 260,
-                  damping: 26,
+                  stiffness: 80,
+                  damping: 20,
                   mass: 1
                 }}
               >
@@ -339,7 +339,7 @@ export default function ConversationDemo() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15 }}
+                      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                     >
                       {/* Desktop Portrait Background - covers 100% of card, no paddings */}
                       <div
@@ -373,10 +373,10 @@ export default function ConversationDemo() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.25, delay: 0.1 }}
+                      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                     >
                       {/* Portrait on Left - flush with top/bottom/left edges of card */}
-                      <div className="w-full lg:w-[320px] h-[240px] lg:h-full relative overflow-hidden flex-shrink-0">
+                      <div className="w-full lg:w-[320px] xl:w-[360px] h-[240px] lg:h-full relative overflow-hidden flex-shrink-0">
                         <div
                           className="absolute inset-0 bg-cover bg-no-repeat bg-center"
                           style={{
